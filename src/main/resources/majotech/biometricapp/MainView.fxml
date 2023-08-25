@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" prefHeight="653.0" prefWidth="1423.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="majotech.biometricapp.MainView">
+   <children>
+      <VBox layoutX="-4.0" layoutY="91.0" prefHeight="562.0" prefWidth="244.0" style="-fx-background-color: #008F59;">
+         <children>
+            <Button mnemonicParsing="false" onAction="#BuscarCliente" prefHeight="66.0" prefWidth="172.0" style="-fx-background-color: #00784B;" text="Buscar" textFill="WHITE">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="40.0" top="130.0" />
+               </VBox.margin>
+               <font>
+                  <Font name="Dubai Bold" size="27.0" />
+               </font>
+               <graphic>
+                  <ImageView fitHeight="32.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../media/lupa.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#AgregarCliente" prefHeight="66.0" prefWidth="172.0" style="-fx-background-color: #00784B;" text="Agregar" textFill="WHITE">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="40.0" />
+               </VBox.margin>
+               <font>
+                  <Font name="Dubai Bold" size="27.0" />
+               </font>
+               <graphic>
+                  <ImageView fitHeight="40.0" fitWidth="46.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../media/agregar-usuario.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#EditarCliente" prefHeight="66.0" prefWidth="172.0" style="-fx-background-color: #00784B;" text="Editar" textFill="WHITE">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="40.0" />
+               </VBox.margin>
+               <font>
+                  <Font name="Dubai Bold" size="27.0" />
+               </font>
+               <graphic>
+                  <ImageView fitHeight="32.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../media/editar.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#EliminarCliente" prefHeight="66.0" prefWidth="172.0" style="-fx-background-color: #00784B;" text="Eliminar" textFill="WHITE">
+               <font>
+                  <Font name="Dubai Bold" size="27.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="20.0" left="40.0" />
+               </VBox.margin>
+               <graphic>
+                  <ImageView fitHeight="32.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../media/basura.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+         </children>
+      </VBox>
+      <ImageView fitHeight="113.0" fitWidth="344.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../media/logo.jpg" />
+         </image></ImageView>
+      <TableView fx:id="tableClientes" layoutX="240.0" layoutY="113.0" prefHeight="562.0" prefWidth="1263.0" style="-fx-background-color: #FFFFFF;" AnchorPane.bottomAnchor="44.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="113.0">
+        <columns>
+          <TableColumn fx:id="num_Cliente" prefWidth="81.0" text="Num. Cliente" />
+          <TableColumn fx:id="sucursal" prefWidth="97.0" text="Sucursal" />
+            <TableColumn fx:id="curp" prefWidth="79.0" text="Curp" />
+            <TableColumn fx:id="nombre" prefWidth="94.0" text="Nombre" />
+            <TableColumn fx:id="telefono" prefWidth="102.0" text="telefono" />
+            <TableColumn fx:id="sexo" prefWidth="64.0" text="Sexo" />
+            <TableColumn fx:id="pais" prefWidth="79.0" text="Pais" />
+            <TableColumn fx:id="estado" prefWidth="81.0" text="Estado" />
+            <TableColumn fx:id="municipio" prefWidth="106.0" text="Municipio" />
+            <TableColumn fx:id="colonia" prefWidth="123.0" text="Colonia" />
+            <TableColumn fx:id="direccion" prefWidth="150.0" text="Direccion" />
+            <TableColumn fx:id="Moroso" prefWidth="139.0" text="Moroso" />
+        </columns>
+      </TableView>
+      <Text fill="#727272" layoutX="652.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Tabla Clientes" wrappingWidth="264.7120056152344">
+         <font>
+            <Font name="Dubai Regular" size="46.0" />
+         </font>
+      </Text>
+   </children>
+</AnchorPane>
