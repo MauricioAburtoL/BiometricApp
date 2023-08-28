@@ -22,7 +22,7 @@ public class Conexion {
     private String bdName = "Prueba";
     private String jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + bdName;
     private String user = "root";
-    private String password = "";
+    private String password = "root";
 
     public Connection EstablecerConexion() {
 

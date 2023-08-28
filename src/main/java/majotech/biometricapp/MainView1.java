@@ -1,59 +1,45 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMLController.java to edit this template
- */
 package majotech.biometricapp;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import majotech.biometricapp.Config.Conexion;
+import majotech.biometricapp.Model.Cliente;
+import majotech.biometricapp.Util.Util;
+import com.machinezoo.sourceafis.FingerprintImage;
+import com.machinezoo.sourceafis.FingerprintMatcher;
+import com.machinezoo.sourceafis.FingerprintTemplate;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.zkteco.biometric.FingerprintSensorErrorCode;
 import com.zkteco.biometric.FingerprintSensorEx;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
-import majotech.biometricapp.Config.Conexion;
-import majotech.biometricapp.Util.Util;
+import static majotech.biometricapp.Busqueda.writeBitmap;
 
 /**
  * FXML Controller class
  *
- * @author ADMIN
+ * @author JoaquinGA
  */
-public class AgregarClienteFXMLController implements Initializable {
-
-    @FXML
-    private ChoiceBox<String> CBSexo;
-    @FXML
-    private TextField TFEstado;
-    @FXML
-    private TextField TFColonia;
-    @FXML
-    private TextField TFNombre;
-    @FXML
-    private TextField TFTelefono;
-    @FXML
-    private TextField TFPais;
-    @FXML
-    private TextField TFMunicipio;
-    @FXML
-    private TextField TFDireccion;
-    @FXML
-    private ImageView dedo;
-    @FXML
-    private TextField TFCurp;
+public class MainView1 implements Initializable {
     private long mhDevice = 0;
     private int cbRegTemp = 0;
     private int iFid = 1;
@@ -72,98 +58,100 @@ public class AgregarClienteFXMLController implements Initializable {
     private byte[] lastRegTemp = new byte[2048];
     private boolean bIdentify = true;
     
+    
+
+    private List<Cliente> clienteList = new ArrayList<>();
+    @FXML
+    private TableView<Cliente> tableClientes;
+    @FXML
+    private TableColumn<Cliente, Integer> num_Cliente;
+    @FXML
+    private TableColumn<Cliente, Integer> sucursal;
+    @FXML
+    private TableColumn<Cliente, String> nombre;
+    @FXML
+    private TableColumn<Cliente, String> curp;
+    @FXML
+    private TableColumn<Cliente, String> telefono;
+    @FXML
+    private TableColumn<Cliente, String> sexo;
+    @FXML
+    private TableColumn<Cliente, String> pais;
+    @FXML
+    private TableColumn<Cliente, String> estado;
+    @FXML
+    private TableColumn<Cliente, String> municipio;
+    @FXML
+    private TableColumn<Cliente, String> colonia;
+    @FXML
+    private TableColumn<Cliente, String> direccion;
+    @FXML
+    private TableColumn<Cliente, Boolean> Moroso;
 
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-        ObservableList<String> opcionesSexo = FXCollections.observableArrayList("Hombre", "Mujer");
-        CBSexo.setItems(opcionesSexo);
+        loadClientesFromDatabase();
+        num_Cliente.setCellValueFactory(new PropertyValueFactory<>("numCliente"));
+        sucursal.setCellValueFactory(new PropertyValueFactory<>("idSucursal"));
+        nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        curp.setCellValueFactory(new PropertyValueFactory<>("curp"));
+        telefono.setCellValueFactory(new PropertyValueFactory<>("telefono"));
+        sexo.setCellValueFactory(new PropertyValueFactory<>("sexo"));
+        pais.setCellValueFactory(new PropertyValueFactory<>("pais"));
+        estado.setCellValueFactory(new PropertyValueFactory<>("estado"));
+        municipio.setCellValueFactory(new PropertyValueFactory<>("municipio"));
+        colonia.setCellValueFactory(new PropertyValueFactory<>("colonia"));
+        direccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
+        Moroso.setCellValueFactory(new PropertyValueFactory<>("moroso"));
 
-        // Selección por defecto (opcional)
-        CBSexo.getSelectionModel().selectFirst();
+        tableClientes.getItems().addAll(clienteList);
     }
 
-    @FXML
-    private void Guardarcliente(ActionEvent event) throws SQLException, IOException {
+    private void loadClientesFromDatabase() {
+        // Aquí deberías tener tu conexión a la base de datos ya creada
         Conexion connection = new Conexion();
-        String sexo = CBSexo.getValue();
-        String estado = TFEstado.getText();
-        String colonia = TFColonia.getText();
-        String nombre = TFNombre.getText();
-        String telefono = TFTelefono.getText();
-        String pais = TFPais.getText();
-        String municipio = TFMunicipio.getText();
-        String direccion = TFDireccion.getText();
-        String curp = TFCurp.getText();
 
-        String sql = "INSERT INTO clientes (num_cliente, id_sucursal, curp, nombre, telefono, sexo, pais, estado, municipio, colonia, direccion, moroso, Huella) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Consulta SQL para obtener los datos de la tabla clientes
+        String query = "SELECT * FROM clientes";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, 1);
-            statement.setInt(2, 1);
-            statement.setString(3, curp);
-            statement.setString(4, nombre);
-            statement.setString(5, telefono);
-            statement.setString(6, sexo);
-            statement.setString(7, pais);
-            statement.setString(8, estado);
-            statement.setString(9, municipio);
-            statement.setString(10, colonia);
-            statement.setString(11, direccion);
-            statement.setInt(12, 1);
-            byte[] bmpData = obtenerDatosBMP();
-             // Establecer los datos del archivo BMP en el campo BLOB en la base de datos
-            statement.setBytes(13, bmpData);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query); ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            statement.executeUpdate();
-        }
+            while (resultSet.next()) {
+                Cliente cliente = new Cliente();
+                cliente.setIdCliente(resultSet.getInt("id_cliente"));
+                cliente.setNumCliente(resultSet.getInt("num_cliente"));
+                cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
+                cliente.setCurp(resultSet.getString("curp"));
+                cliente.setNombre(resultSet.getString("nombre"));
+                cliente.setTelefono(resultSet.getString("telefono"));
+                cliente.setSexo(resultSet.getString("sexo"));
+                cliente.setPais(resultSet.getString("pais"));
+                cliente.setEstado(resultSet.getString("estado"));
+                cliente.setMunicipio(resultSet.getString("municipio"));
+                cliente.setColonia(resultSet.getString("colonia"));
+                cliente.setDireccion(resultSet.getString("direccion"));
+                cliente.setMoroso(resultSet.getBoolean("moroso"));
 
-    }
-    
-    private byte[] obtenerDatosBMP() throws IOException {
-        // Ruta del archivo BMP existente
-        String rutaArchivoBMP = "src\\main\\java\\majotech\\biometricapp\\resources\\"+TFCurp.getText()+".bmp";
+                clienteList.add(cliente);
+            }
 
-        try (FileInputStream fis = new FileInputStream(rutaArchivoBMP)) {
-            byte[] buffer = new byte[fis.available()];
-            fis.read(buffer);
-            return buffer;
+        } catch (SQLException e) {
+            Util.showAlert("An error occurred while retrieving data from the database.", Alert.AlertType.ERROR);
         }
     }
 
     @FXML
-    private void Cancelar(ActionEvent event) {
-    }
-
-    //permite que solo se puedan ingresar numeros
-    @FXML
-    private void txtTeclaPress(KeyEvent event) {
-
-        if (TFTelefono.getText().length() >= 10) {
-            event.consume();
-        }
-
-    }
-
-    @FXML
-    private void openSensor(ActionEvent event) {
-
-        if (TFCurp.getText().isEmpty()) {
-            Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
-            return;
-        }
-
+    private void BuscarCliente(ActionEvent event) {
         if (0 != mhDevice) {
-
+            
             Util.showAlert("Please close device first!", Alert.AlertType.WARNING);
             return;
         }
-        int ret = FingerprintSensorErrorCode.ZKFP_ERR_OK;
-
+        int ret ;
+      
         cbRegTemp = 0;
         bRegister = false;
         bIdentify = false;
@@ -199,32 +187,113 @@ public class AgregarClienteFXMLController implements Initializable {
         size[0] = 4;
         FingerprintSensorEx.GetParameters(mhDevice, 2, paramValue, size);
         fpHeight = byteArrayToInt(paramValue);
-
+        
         imgbuf = new byte[fpWidth * fpHeight];
-        dedo.resize(fpWidth, fpHeight);
         mbStop = false;
         workThread = new WorkThread();
         workThread.start();
         Util.showAlert("Open succ!", Alert.AlertType.CONFIRMATION);
-
+        
     }
 
     @FXML
-    private void closeSensor(ActionEvent event) {
-        FreeSensor();
-        Util.showAlert("Close succ!", Alert.AlertType.CONFIRMATION);
-
+    private void AgregarCliente(ActionEvent event) {
     }
 
+    @FXML
+    private void EditarCliente(ActionEvent event) {
+    }
+
+    @FXML
+    private void EliminarCliente(ActionEvent event) {
+    }
+
+    public void prueba() {
+        String pathGen = "src\\main\\java\\majotech\\biometricapp\\resources\\";
+        try {
+            Map<Integer, byte[]> fingerprintsMap = fetchFingerprintsFromDatabase();
+            byte[] probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
+            FingerprintImage probeImage = new FingerprintImage(probeBytes);
+            FingerprintTemplate probe = new FingerprintTemplate(probeImage);
+
+            FingerprintMatcher matcher = new FingerprintMatcher(probe);
+
+            double threshold = 40;
+
+            for (Map.Entry<Integer, byte[]> entry : fingerprintsMap.entrySet()) {
+                int id = entry.getKey();
+                byte[] candidateBytes = entry.getValue();
+
+                FingerprintImage candidateImage = new FingerprintImage(candidateBytes);
+                FingerprintTemplate candidate = new FingerprintTemplate(candidateImage);
+
+                double similarity = matcher.match(candidate);
+
+                if (similarity >= threshold) {
+                    System.out.println("Las huellas coinciden para el ID: " + id);
+
+                    // Seleccionar el registro en la tabla correspondiente al ID
+                    for (Cliente cliente : clienteList) {
+                        if (cliente.getIdCliente() == id) {
+                            tableClientes.getSelectionModel().select(cliente);
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.println("Las huellas no coinciden para el ID: " + id);
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MainView1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private static Map<Integer, byte[]> fetchFingerprintsFromDatabase() {
+        Map<Integer, byte[]> fingerprintsMap = new HashMap<>();
+        Conexion connection = new Conexion();
+        String query = "SELECT id_cliente, Huella FROM clientes";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id_cliente");
+                    byte[] fingerprintBytes = resultSet.getBytes("Huella");
+                    fingerprintsMap.put(id, fingerprintBytes);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MainView1.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return fingerprintsMap;
+    }
+    
+    
+    private void FreeSensor() {
+        mbStop = true;
+        try { 
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            
+            e.printStackTrace();
+        }
+        if (0 != mhDB) {
+            FingerprintSensorEx.DBFree(mhDB);
+            mhDB = 0;
+        }
+        if (0 != mhDevice) {
+            FingerprintSensorEx.CloseDevice(mhDevice);
+            mhDevice = 0;
+        }
+        FingerprintSensorEx.Terminate();
+    }
     public static int byteArrayToInt(byte[] bytes) {
         int number = bytes[0] & 0xFF;
-
+       
         number |= ((bytes[1] << 8) & 0xFF00);
         number |= ((bytes[2] << 16) & 0xFF0000);
         number |= ((bytes[3] << 24) & 0xFF000000);
         return number;
     }
-
     private class WorkThread extends Thread {
 
         @Override
@@ -239,7 +308,7 @@ public class AgregarClienteFXMLController implements Initializable {
                         int[] size = new int[1];
                         size[0] = 4;
                         int nFakeStatus = 0;
-
+                        
                         ret = FingerprintSensorEx.GetParameters(mhDevice, 2004, paramValue, size);
                         nFakeStatus = byteArrayToInt(paramValue);
                         System.out.println("ret = " + ret + ",nFakeStatus=" + nFakeStatus);
@@ -252,6 +321,7 @@ public class AgregarClienteFXMLController implements Initializable {
                     OnExtractOK(template, templateLen[0]);
                     String strBase64 = FingerprintSensorEx.BlobToBase64(template, templateLen[0]);
                     System.out.println("strBase64=" + strBase64);
+                    
                 }
                 try {
                     Thread.sleep(500);
@@ -263,18 +333,18 @@ public class AgregarClienteFXMLController implements Initializable {
         }
 
         private void runOnUiThread(Runnable runnable) {
+            
 
         }
     }
-
+    
     private void OnCatpureOK(byte[] imgBuf) {
         try {
-
-            writeBitmap(imgBuf, fpWidth, fpHeight, "src\\main\\java\\majotech\\biometricapp\\resources\\" + TFCurp.getText() + ".bmp");
-            dedo.setImage(new Image(new FileInputStream("src\\main\\java\\majotech\\biometricapp\\resources\\" + TFCurp.getText() + ".bmp")));
-
+            writeBitmap(imgBuf, fpWidth, fpHeight, "src\\main\\java\\majotech\\biometricapp\\resources\\fingerprintBusqueda.bmp");
+            FreeSensor();
+            prueba();
         } catch (IOException e) {
-
+            
             e.printStackTrace();
         }
     }
@@ -308,7 +378,7 @@ public class AgregarClienteFXMLController implements Initializable {
                     cbRegTemp = _retLen[0];
                     System.arraycopy(regTemp, 0, lastRegTemp, 0, cbRegTemp);
                     String strBase64 = FingerprintSensorEx.BlobToBase64(regTemp, cbRegTemp);
-
+                    
                     Util.showAlert("enroll succ", Alert.AlertType.NONE);
                 } else {
                     Util.showAlert("enroll fail, error code=" + ret, Alert.AlertType.NONE);
@@ -343,38 +413,19 @@ public class AgregarClienteFXMLController implements Initializable {
         }
     }
 
-    private void FreeSensor() {
-        mbStop = true;
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-
-            e.printStackTrace();
-        }
-        if (0 != mhDB) {
-            FingerprintSensorEx.DBFree(mhDB);
-            mhDB = 0;
-        }
-        if (0 != mhDevice) {
-            FingerprintSensorEx.CloseDevice(mhDevice);
-            mhDevice = 0;
-        }
-        FingerprintSensorEx.Terminate();
-    }
-
     public static void writeBitmap(byte[] imageBuf, int nWidth, int nHeight,
             String path) throws IOException {
         java.io.FileOutputStream fos = new java.io.FileOutputStream(path);
         java.io.DataOutputStream dos = new java.io.DataOutputStream(fos);
 
         int w = (((nWidth + 3) / 4) * 4);
-        int bfType = 0x424d;
+        int bfType = 0x424d; 
         int bfSize = 54 + 1024 + w * nHeight;
         int bfReserved1 = 0;
         int bfReserved2 = 0;
         int bfOffBits = 54 + 1024;
 
-        dos.writeShort(bfType);
+        dos.writeShort(bfType); 
         dos.write(changeByte(bfSize), 0, 4);
         dos.write(changeByte(bfReserved1), 0, 2);
         dos.write(changeByte(bfReserved2), 0, 2);
@@ -383,7 +434,7 @@ public class AgregarClienteFXMLController implements Initializable {
         int biSize = 40;
         int biWidth = nWidth;
         int biHeight = nHeight;
-        int biPlanes = 1;
+        int biPlanes = 1; 
         int biBitcount = 8;
         int biCompression = 0;
         int biSizeImage = w * nHeight;
@@ -433,13 +484,12 @@ public class AgregarClienteFXMLController implements Initializable {
 
     public static byte[] intToByteArray(final int number) {
         byte[] abyte = new byte[4];
-
+       
         abyte[0] = (byte) (0xff & number);
-
+      
         abyte[1] = (byte) ((0xff00 & number) >> 8);
         abyte[2] = (byte) ((0xff0000 & number) >> 16);
         abyte[3] = (byte) ((0xff000000 & number) >> 24);
         return abyte;
     }
-
 }

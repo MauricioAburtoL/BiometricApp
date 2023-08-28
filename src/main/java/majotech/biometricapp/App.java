@@ -18,22 +18,24 @@ public class App extends Application {
      private Stage primaryStage;
     private AnchorPane mainLayout;
     
+    
+    
     @Override
     public void start(Stage stage) throws IOException {
-       // FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("MainView" + ".fxml"));
-        //stage.setScene(new Scene(fxmlLoader.load()));
-        // stage.show();
+       FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("MainView" + ".fxml"));
+       stage.setScene(new Scene(fxmlLoader.load()));
+        stage.show();
         
-        this.primaryStage = primaryStage;
-        this.primaryStage.setTitle("Main Form");
+        //this.primaryStage = primaryStage;
+        //this.primaryStage.setTitle("Main Form");
 
-        showMainView(); // Show the initial screen
+      // showMainView(); // Show the initial screen
     }
     
     public void showMainView() {
         try {
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(App.class.getResource("MainView.fxml"));
+            loader.setLocation(App.class.getResource(".fxml"));
             mainLayout = loader.load();
 
             Scene scene = new Scene(mainLayout);

@@ -108,7 +108,7 @@ public class Busqueda implements Initializable {
     @FXML
     private void closeSensor(ActionEvent event) {
         FreeSensor();
-        Util.showAlert("Close succ!", Alert.AlertType.NONE);
+        Util.showAlert("Close succ!", Alert.AlertType.CONFIRMATION);
     }
 
     @FXML
