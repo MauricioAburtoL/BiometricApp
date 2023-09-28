@@ -126,4 +126,9 @@ public class Cliente {
     public void setMoroso(Boolean moroso) {
         this.moroso = moroso;
     }
+
+    @Override
+    public String toString() {
+        return "Cliente{" + "idCliente=" + idCliente + ", numCliente=" + numCliente + ", idSucursal=" + idSucursal + ", curp=" + curp + ", nombre=" + nombre + ", telefono=" + telefono + ", sexo=" + sexo + ", pais=" + pais + ", estado=" + estado + ", municipio=" + municipio + ", colonia=" + colonia + ", direccion=" + direccion + ", moroso=" + moroso + '}';
+    }
 }

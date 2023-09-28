@@ -31,7 +31,7 @@
       <TextField fx:id="TFColonia" layoutX="220.0" layoutY="394.0" prefHeight="0.0" prefWidth="152.0" promptText="Colonia" />
       <TextField fx:id="TFCurp" layoutX="220.0" layoutY="171.0" prefHeight="0.0" prefWidth="152.0" promptText="Curp" />
       <TextField fx:id="TFNombre" layoutX="29.0" layoutY="171.0" prefHeight="0.0" prefWidth="152.0" promptText="Nombre" />
-      <TextField fx:id="TFTelefono" layoutX="29.0" layoutY="242.0" onKeyTyped="#txtTeclaPress" prefHeight="26.0" prefWidth="152.0" promptText="Telefono" />
+      <TextField fx:id="TFTelefono" layoutX="29.0" layoutY="242.0" prefHeight="26.0" prefWidth="152.0" promptText="Telefono" />
       <TextField fx:id="TFPais" layoutX="29.0" layoutY="394.0" prefHeight="0.0" prefWidth="152.0" promptText="Pais" />
       <TextField fx:id="TFMunicipio" layoutX="29.0" layoutY="468.0" prefHeight="0.0" prefWidth="152.0" promptText="Muncipio" />
       <TextField fx:id="TFDireccion" layoutX="29.0" layoutY="318.0" prefHeight="0.0" prefWidth="152.0" promptText="Direccion" />

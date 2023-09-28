@@ -1,31 +1,51 @@
-package majotech.biometricapp;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package majotech.biometricapp.Util;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-
-import javafx.scene.image.ImageView;
-import majotech.biometricapp.Util.Util;
-
+import com.machinezoo.sourceafis.FingerprintImage;
+import com.machinezoo.sourceafis.FingerprintMatcher;
+import com.machinezoo.sourceafis.FingerprintTemplate;
 import com.zkteco.biometric.FingerprintSensorErrorCode;
 import com.zkteco.biometric.FingerprintSensorEx;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.util.Duration;
+import majotech.biometricapp.Config.Conexion;
+import majotech.biometricapp.MainView;
+import majotech.biometricapp.Model.Cliente;
 
 /**
- * FXML Controller class
  *
  * @author JoaquinGA
  */
-public class Busqueda implements Initializable {
+public class LectorHuella {
 
-    @FXML
+    private String pathImage = "src\\main\\java\\majotech\\biometricapp\\resources\\";
     private ImageView dedo;
-
+    private TextField TFCurp;
+    private List<Cliente> clienteList = new ArrayList<>();
+    private TableView<Cliente> tableClientes;
+    private boolean busqueda;
     private long mhDevice = 0;
     private int cbRegTemp = 0;
     private int iFid = 1;
@@ -43,41 +63,42 @@ public class Busqueda implements Initializable {
     private byte[][] regtemparray = new byte[3][2048];
     private byte[] lastRegTemp = new byte[2048];
     private boolean bIdentify = true;
-
-    /**
-     * Initializes the controller class.
-     */
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
     
-    }
 
-    @FXML
-    private void openSensor(ActionEvent event) {
+    public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF) {
+        if (b) {
+            this.clienteList = cl;
+            this.tableClientes = tC;
+            this.busqueda = b;
+           
+        } else {
+            this.busqueda = b;
+            this.dedo = d;
+            this.TFCurp = TF;
+        }
         if (0 != mhDevice) {
-            
-            Util.showAlert("Please close device first!", Alert.AlertType.WARNING);
+            Util.showAlertWithAutoClose(Alert.AlertType.WARNING, "Error en el Lector", "Cierre el lector o desconectelo un momento", Duration.seconds(5));
             return;
         }
-        int ret = FingerprintSensorErrorCode.ZKFP_ERR_OK;
-      
+        int ret;
+
         cbRegTemp = 0;
         bRegister = false;
         bIdentify = false;
         iFid = 1;
         enroll_idx = 0;
         if (FingerprintSensorErrorCode.ZKFP_ERR_OK != FingerprintSensorEx.Init()) {
-            Util.showAlert("Init failed!", Alert.AlertType.ERROR);
+            Util.showAlert("Fallo al inicar el Lector!", Alert.AlertType.ERROR);
             return;
         }
         ret = FingerprintSensorEx.GetDeviceCount();
         if (ret < 0) {
-            Util.showAlert("No devices connected!", Alert.AlertType.WARNING);
+            Util.showAlert("Ningun Dispositivo Conectado!", Alert.AlertType.WARNING);
             FreeSensor();
             return;
         }
         if (0 == (mhDevice = FingerprintSensorEx.OpenDevice(0))) {
-            Util.showAlert("Open device fail, ret = " + ret + "!", Alert.AlertType.ERROR);
+            Util.showAlert("Fallo con el lector, ret = " + ret + "!", Alert.AlertType.ERROR);
             FreeSensor();
             return;
         }
@@ -96,28 +117,22 @@ public class Busqueda implements Initializable {
         size[0] = 4;
         FingerprintSensorEx.GetParameters(mhDevice, 2, paramValue, size);
         fpHeight = byteArrayToInt(paramValue);
-        
+
         imgbuf = new byte[fpWidth * fpHeight];
-        dedo.resize(fpWidth, fpHeight);
         mbStop = false;
-        workThread = new WorkThread();
+        WorkThread workThread = new WorkThread();
         workThread.start();
-        Util.showAlert("Open succ!", Alert.AlertType.CONFIRMATION);
+        Util.showAlertWithAutoClose(Alert.AlertType.CONFIRMATION, "Lector", "Lector Listo", Duration.seconds(1));
     }
 
-    @FXML
-    private void closeSensor(ActionEvent event) {
+    public void closeSensor() {
         FreeSensor();
-        Util.showAlert("Close succ!", Alert.AlertType.CONFIRMATION);
-    }
-
-    @FXML
-    private void Regresar(ActionEvent event) {
+        Util.showAlertWithAutoClose(Alert.AlertType.CONFIRMATION, "Lector", "Lector Terminado", Duration.ZERO);
     }
 
     public static int byteArrayToInt(byte[] bytes) {
         int number = bytes[0] & 0xFF;
-       
+
         number |= ((bytes[1] << 8) & 0xFF00);
         number |= ((bytes[2] << 16) & 0xFF0000);
         number |= ((bytes[3] << 24) & 0xFF000000);
@@ -138,19 +153,17 @@ public class Busqueda implements Initializable {
                         int[] size = new int[1];
                         size[0] = 4;
                         int nFakeStatus = 0;
-                        
+
                         ret = FingerprintSensorEx.GetParameters(mhDevice, 2004, paramValue, size);
                         nFakeStatus = byteArrayToInt(paramValue);
-                        System.out.println("ret = " + ret + ",nFakeStatus=" + nFakeStatus);
                         if (0 == ret && (byte) (nFakeStatus & 31) != 31) {
-                            Util.showAlert("Is a fake-finer?", Alert.AlertType.WARNING);
+                            Util.showAlert("Esto es un dedo?", Alert.AlertType.WARNING);
                             return;
                         }
                     }
                     OnCatpureOK(imgbuf);
                     OnExtractOK(template, templateLen[0]);
                     String strBase64 = FingerprintSensorEx.BlobToBase64(template, templateLen[0]);
-                    System.out.println("strBase64=" + strBase64);
                 }
                 try {
                     Thread.sleep(500);
@@ -162,17 +175,25 @@ public class Busqueda implements Initializable {
         }
 
         private void runOnUiThread(Runnable runnable) {
-            
 
         }
     }
 
     private void OnCatpureOK(byte[] imgBuf) {
         try {
-            writeBitmap(imgBuf, fpWidth, fpHeight, "fingerprint.bmp");
-            dedo.setImage(new Image(new FileInputStream("fingerprint.bmp")));
+            if (busqueda) {
+                writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
+                FreeSensor();
+                if (!prueba()) {
+
+                }
+            } else {
+                writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + TFCurp.getText() + ".bmp");
+                dedo.setImage(new Image(new FileInputStream(pathImage + TFCurp.getText() + ".bmp")));
+                FreeSensor();
+            }
+
         } catch (IOException e) {
-            
             e.printStackTrace();
         }
     }
@@ -206,7 +227,7 @@ public class Busqueda implements Initializable {
                     cbRegTemp = _retLen[0];
                     System.arraycopy(regTemp, 0, lastRegTemp, 0, cbRegTemp);
                     String strBase64 = FingerprintSensorEx.BlobToBase64(regTemp, cbRegTemp);
-                    
+
                     Util.showAlert("enroll succ", Alert.AlertType.NONE);
                 } else {
                     Util.showAlert("enroll fail, error code=" + ret, Alert.AlertType.NONE);
@@ -243,10 +264,10 @@ public class Busqueda implements Initializable {
 
     private void FreeSensor() {
         mbStop = true;
-        try { 
+        try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            
+
             e.printStackTrace();
         }
         if (0 != mhDB) {
@@ -266,13 +287,13 @@ public class Busqueda implements Initializable {
         java.io.DataOutputStream dos = new java.io.DataOutputStream(fos);
 
         int w = (((nWidth + 3) / 4) * 4);
-        int bfType = 0x424d; 
+        int bfType = 0x424d;
         int bfSize = 54 + 1024 + w * nHeight;
         int bfReserved1 = 0;
         int bfReserved2 = 0;
         int bfOffBits = 54 + 1024;
 
-        dos.writeShort(bfType); 
+        dos.writeShort(bfType);
         dos.write(changeByte(bfSize), 0, 4);
         dos.write(changeByte(bfReserved1), 0, 2);
         dos.write(changeByte(bfReserved2), 0, 2);
@@ -281,7 +302,7 @@ public class Busqueda implements Initializable {
         int biSize = 40;
         int biWidth = nWidth;
         int biHeight = nHeight;
-        int biPlanes = 1; 
+        int biPlanes = 1;
         int biBitcount = 8;
         int biCompression = 0;
         int biSizeImage = w * nHeight;
@@ -331,12 +352,90 @@ public class Busqueda implements Initializable {
 
     public static byte[] intToByteArray(final int number) {
         byte[] abyte = new byte[4];
-       
+
         abyte[0] = (byte) (0xff & number);
-      
+
         abyte[1] = (byte) ((0xff00 & number) >> 8);
         abyte[2] = (byte) ((0xff0000 & number) >> 16);
         abyte[3] = (byte) ((0xff000000 & number) >> 24);
         return abyte;
+    }
+
+    public boolean prueba() {
+
+        String pathGen = "src\\main\\java\\majotech\\biometricapp\\resources\\";
+        try {
+            Map<Integer, byte[]> fingerprintsMap = fetchFingerprintsFromDatabase();
+            if (fingerprintsMap == null) {
+                return false;
+            }
+            byte[] probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
+            FingerprintImage probeImage = new FingerprintImage(probeBytes);
+            FingerprintTemplate probe = new FingerprintTemplate(probeImage);
+
+            FingerprintMatcher matcher = new FingerprintMatcher(probe);
+
+            double threshold = 40;
+
+            for (Map.Entry<Integer, byte[]> entry : fingerprintsMap.entrySet()) {
+                int id = entry.getKey();
+                byte[] candidateBytes = entry.getValue();
+
+                FingerprintImage candidateImage = new FingerprintImage(candidateBytes);
+                FingerprintTemplate candidate = new FingerprintTemplate(candidateImage);
+
+                double similarity = matcher.match(candidate);
+
+                if (similarity >= threshold) {
+
+                    // Seleccionar el registro en la tabla correspondiente al ID
+                    for (Cliente cliente : clienteList) {
+                        if (cliente.getIdCliente() == id) {
+                            Platform.runLater(() -> {
+                                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario encontrado es: " + cliente.getNombre(), Duration.ZERO);
+                            });
+                            tableClientes.getSelectionModel().select(cliente);
+                            return true;
+                        }
+                    }
+
+                }
+
+            }
+            Platform.runLater(() -> {
+                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario no encontrado", "No se encontro ningun usuario con esta huella", Duration.ZERO);
+            });
+
+            return false;
+
+        } catch (IOException ex) {
+            System.out.println(ex);
+            Logger.getLogger(MainView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return false;
+    }
+
+    private static Map<Integer, byte[]> fetchFingerprintsFromDatabase() {
+        Map<Integer, byte[]> fingerprintsMap = new HashMap<>();
+        Conexion connection = new Conexion();
+        String query = "SELECT id_cliente, Huella FROM clientes";
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            if (statement == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return null;
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id_cliente");
+                    byte[] fingerprintBytes = resultSet.getBytes("Huella");
+                    fingerprintsMap.put(id, fingerprintBytes);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MainView.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return fingerprintsMap;
     }
 }
