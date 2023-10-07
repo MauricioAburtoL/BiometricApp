@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import majotech.biometricapp.Util.Util;
 
 public class Conexion {
-    private String ip = "192.168.0.14";
+    private String ip = "86.38.202.154";
     private String port = "3306";
     private String bdName = "u737516005_prestamos";
     private String jdbcUrl = "jdbc:mysql://" + ip + ":" + port + "/" + bdName;

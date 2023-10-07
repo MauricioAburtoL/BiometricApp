@@ -127,21 +127,22 @@ public class MainView implements Initializable {
 
     public void actualizarTablaClientes() {
         clienteList.clear();
-        loadClientesFromDatabase();
+        int limit = 10;
+        loadClientesFromDatabase(limit);
 
         tableClientes.getItems().clear();
         tableClientes.getItems().addAll(clienteList);
     }
 
-    private void loadClientesFromDatabase() {
+    private void loadClientesFromDatabase(int limit) {
     Conexion connection = new Conexion();
-    String query = "SELECT * FROM clientes";
+    String query = "SELECT * FROM clientes LIMIT 10";
     try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
         if (preparedStatement == null) {
             Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
             return;
         }
-        
+         preparedStatement.setInt(1, limit);
         try (ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 Cliente cliente = new Cliente();
