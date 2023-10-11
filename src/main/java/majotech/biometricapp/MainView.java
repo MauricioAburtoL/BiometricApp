@@ -70,20 +70,18 @@ public class MainView implements Initializable {
         actualizarTablaClientes();
     }
 
-    
     @FXML
-    private void BuscarCliente(ActionEvent event) { 
+    private void BuscarCliente(ActionEvent event) {
         tableClientes.getSelectionModel().clearSelection();
         LectorHuella lc = new LectorHuella();
         lc.abrirSensor(clienteList, tableClientes, true, null, null);
-       
-                
+
     }
 
     @FXML
     private void AgregarCliente(ActionEvent event) {
         Util.openView("AgregarClienteFXML", "Agregar Cliente");
-         actualizarTablaClientes();
+        actualizarTablaClientes();
     }
 
     @FXML
@@ -109,10 +107,10 @@ public class MainView implements Initializable {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, numClienteSeleccionado.getCurp());
                 int filasafectadas = statement.executeUpdate();
-                if(filasafectadas!=0){
+                if (filasafectadas != 0) {
                     Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Eliminacion Exitosa", "La Eliminacion fue Exitosa", Duration.seconds(3));
-                }else{
-                    
+                } else {
+
                 }
             }
         } else {
@@ -127,46 +125,91 @@ public class MainView implements Initializable {
 
     public void actualizarTablaClientes() {
         clienteList.clear();
-        int limit = 10;
-        loadClientesFromDatabase(limit);
+
+        loadClientesFromDatabase();
 
         tableClientes.getItems().clear();
         tableClientes.getItems().addAll(clienteList);
     }
 
-    private void loadClientesFromDatabase(int limit) {
-    Conexion connection = new Conexion();
-    String query = "SELECT * FROM clientes LIMIT 10";
-    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-        if (preparedStatement == null) {
-            Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
-            return;
-        }
-         preparedStatement.setInt(1, limit);
-        try (ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                Cliente cliente = new Cliente();
-                cliente.setIdCliente(resultSet.getInt("id_cliente"));
-                cliente.setNumCliente(resultSet.getInt("num_cliente"));
-                cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
-                cliente.setCurp(resultSet.getString("curp"));
-                cliente.setNombre(resultSet.getString("nombre"));
-                cliente.setTelefono(resultSet.getString("telefono"));
-                cliente.setSexo(resultSet.getString("sexo"));
-                cliente.setPais(resultSet.getString("pais"));
-                cliente.setEstado(resultSet.getString("estado"));
-                cliente.setMunicipio(resultSet.getString("municipio"));
-                cliente.setColonia(resultSet.getString("colonia"));
-                cliente.setDireccion(resultSet.getString("direccion"));
-                cliente.setMoroso(resultSet.getBoolean("moroso"));
-                clienteList.add(cliente);
-            }
-        }
-    } catch (SQLException e) {
-        Util.showAlert("Ah ocurrido un error en la base de datos al obtener los datos de los clientes",
-                Alert.AlertType.ERROR);
+    public void actualizarTablaClientes2(Cliente selectcliente) {
+        clienteList.clear();
+
+        loadClientesFromDatabase2(selectcliente);
+
+        tableClientes.getItems().clear();
+        tableClientes.getItems().addAll(clienteList);
     }
-}
+
+    private void loadClientesFromDatabase() {
+        Conexion connection = new Conexion();
+        String query = "SELECT * FROM clientes";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            if (preparedStatement == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return;
+            }
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Cliente cliente = new Cliente();
+                    cliente.setIdCliente(resultSet.getInt("id_cliente"));
+                    cliente.setNumCliente(resultSet.getInt("num_cliente"));
+                    cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
+                    cliente.setCurp(resultSet.getString("curp"));
+                    cliente.setNombre(resultSet.getString("nombre"));
+                    cliente.setTelefono(resultSet.getString("telefono"));
+                    cliente.setSexo(resultSet.getString("sexo"));
+                    cliente.setPais(resultSet.getString("pais"));
+                    cliente.setEstado(resultSet.getString("estado"));
+                    cliente.setMunicipio(resultSet.getString("municipio"));
+                    cliente.setColonia(resultSet.getString("colonia"));
+                    cliente.setDireccion(resultSet.getString("direccion"));
+                    cliente.setMoroso(resultSet.getBoolean("moroso"));
+                    clienteList.add(cliente);
+                }
+            }
+        } catch (SQLException e) {
+            Util.showAlert("Ah ocurrido un error en la base de datos al obtener los datos de los clientes" + e,
+                    Alert.AlertType.ERROR);
+        }
+    }
+
+    private void loadClientesFromDatabase2(Cliente selectcliente) {
+        clienteList.add(selectcliente);
+        Conexion connection = new Conexion();
+        String query = "SELECT * FROM clientes";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            if (preparedStatement == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return;
+            }
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Cliente cliente = new Cliente();
+                    cliente.setIdCliente(resultSet.getInt("id_cliente"));
+                    cliente.setNumCliente(resultSet.getInt("num_cliente"));
+                    cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
+                    cliente.setCurp(resultSet.getString("curp"));
+                    cliente.setNombre(resultSet.getString("nombre"));
+                    cliente.setTelefono(resultSet.getString("telefono"));
+                    cliente.setSexo(resultSet.getString("sexo"));
+                    cliente.setPais(resultSet.getString("pais"));
+                    cliente.setEstado(resultSet.getString("estado"));
+                    cliente.setMunicipio(resultSet.getString("municipio"));
+                    cliente.setColonia(resultSet.getString("colonia"));
+                    cliente.setDireccion(resultSet.getString("direccion"));
+                    cliente.setMoroso(resultSet.getBoolean("moroso"));
+                    if (!cliente.equals(selectcliente)) {
+                        clienteList.add(cliente);
+                    }
+
+                }
+            }
+        } catch (SQLException e) {
+            Util.showAlert("Ah ocurrido un error en la base de datos al obtener los datos de los clientes" + e,
+                    Alert.AlertType.ERROR);
+        }
+    }
 
     private Cliente obtenerClienteSeleccionado() {
         Cliente clienteSeleccionado = tableClientes.getSelectionModel().getSelectedItem();
