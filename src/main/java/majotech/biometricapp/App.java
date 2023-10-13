@@ -7,7 +7,7 @@ import majotech.biometricapp.Util.Util;
 public class App extends Application {    
     @Override
     public void start(Stage stage){
-        Util.openView("MainView", "Principal");
+        Util.openView("LoginFXML", "Login");
     }
     
     public static void main(String[] args) {

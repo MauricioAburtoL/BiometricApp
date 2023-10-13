@@ -63,14 +63,13 @@ public class LectorHuella {
     private byte[][] regtemparray = new byte[3][2048];
     private byte[] lastRegTemp = new byte[2048];
     private boolean bIdentify = true;
-    
 
     public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF) {
         if (b) {
             this.clienteList = cl;
             this.tableClientes = tC;
             this.busqueda = b;
-           
+
         } else {
             this.busqueda = b;
             this.dedo = d;
@@ -395,8 +394,8 @@ public class LectorHuella {
                                 Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario encontrado es: " + cliente.getNombre(), Duration.seconds(3));
                             });
                             System.out.println(cliente);
-                            
-                            actualizarTablaClientes2(cliente);
+
+                            reloadTable(cliente);
                             tableClientes.getSelectionModel().select(cliente);
                             return true;
                         }
@@ -431,11 +430,11 @@ public class LectorHuella {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     int id = resultSet.getInt("id_cliente");
-                    if(resultSet.getBytes("Huella")!= null){
+                    if (resultSet.getBytes("Huella") != null) {
                         byte[] fingerprintBytes = resultSet.getBytes("Huella");
-                        fingerprintsMap.put(id, fingerprintBytes); 
+                        fingerprintsMap.put(id, fingerprintBytes);
                     }
-                   
+
                 }
             }
         } catch (SQLException ex) {
@@ -444,7 +443,8 @@ public class LectorHuella {
 
         return fingerprintsMap;
     }
-     private void loadClientesFromDatabase2(Cliente selectcliente) {
+
+    private void loadClientesFromDatabase2(Cliente selectcliente) {
         clienteList.add(selectcliente);
         Conexion connection = new Conexion();
         String query = "SELECT * FROM clientes";
@@ -480,11 +480,28 @@ public class LectorHuella {
                     Alert.AlertType.ERROR);
         }
     }
-      public void actualizarTablaClientes2(Cliente selectcliente) {
+
+    public void actualizarTablaClientes2(Cliente selectcliente) {
         clienteList.clear();
 
         loadClientesFromDatabase2(selectcliente);
 
+        tableClientes.getItems().clear();
+        tableClientes.getItems().addAll(clienteList);
+    }
+
+    private void reloadTable(Cliente c) {
+        List<Cliente> clienteList2 = new ArrayList<>();
+        if (c != null) {
+            clienteList2.add(c);
+        }
+        for (Cliente cliente : clienteList) {
+            if (!c.equals(c)) {
+                clienteList2.add(cliente);
+            }
+        }
+        clienteList.clear();
+        clienteList = clienteList2;
         tableClientes.getItems().clear();
         tableClientes.getItems().addAll(clienteList);
     }

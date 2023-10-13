@@ -20,10 +20,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.Model.Cliente;
+import majotech.biometricapp.Util.InitializableController;
 import majotech.biometricapp.Util.Util;
 import majotech.biometricapp.Util.LectorHuella;
 
-public class MainView implements Initializable {
+public class MainView implements Initializable, InitializableController {
 
     private List<Cliente> clienteList = new ArrayList<>();
 
@@ -56,6 +57,8 @@ public class MainView implements Initializable {
     @FXML
     private TextField tfBuscar;
 
+    private int sucursalB;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         num_Cliente.setCellValueFactory(new PropertyValueFactory<>("numCliente"));
@@ -70,6 +73,11 @@ public class MainView implements Initializable {
         colonia.setCellValueFactory(new PropertyValueFactory<>("colonia"));
         direccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         Moroso.setCellValueFactory(new PropertyValueFactory<>("moroso"));
+    }
+
+    @Override
+    public void initData(Object data) {
+        this.sucursalB = (int) data;
         actualizarTablaClientes();
     }
 
@@ -135,22 +143,20 @@ public class MainView implements Initializable {
         tableClientes.getItems().addAll(clienteList);
     }
 
-    public void actualizarTablaClientes2(Cliente selectcliente) {
-        clienteList.clear();
-
-        loadClientesFromDatabase2(selectcliente);
-
-        tableClientes.getItems().clear();
-        tableClientes.getItems().addAll(clienteList);
-    }
-
     private void loadClientesFromDatabase() {
         Conexion connection = new Conexion();
         String query = "SELECT * FROM clientes";
+        if (sucursalB != 1) {
+            query += " WHERE id_sucursal = ?";
+        }
+        System.out.println(query);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             if (preparedStatement == null) {
                 Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
                 return;
+            }
+            if (sucursalB != 1) {
+                preparedStatement.setInt(1, sucursalB);
             }
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -177,43 +183,19 @@ public class MainView implements Initializable {
         }
     }
 
-    private void loadClientesFromDatabase2(Cliente selectcliente) {
-        clienteList.add(selectcliente);
-        Conexion connection = new Conexion();
-        String query = "SELECT * FROM clientes";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            if (preparedStatement == null) {
-                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
-                return;
-            }
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    Cliente cliente = new Cliente();
-                    cliente.setIdCliente(resultSet.getInt("id_cliente"));
-                    cliente.setNumCliente(resultSet.getInt("num_cliente"));
-                    cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
-                    cliente.setCurp(resultSet.getString("curp"));
-                    cliente.setNombre(resultSet.getString("nombre"));
-                    cliente.setTelefono(resultSet.getString("telefono"));
-                    cliente.setSexo(resultSet.getString("sexo"));
-                    cliente.setPais(resultSet.getString("pais"));
-                    cliente.setEstado(resultSet.getString("estado"));
-                    cliente.setMunicipio(resultSet.getString("municipio"));
-                    cliente.setColonia(resultSet.getString("colonia"));
-                    cliente.setDireccion(resultSet.getString("direccion"));
-                    cliente.setMoroso(resultSet.getBoolean("moroso"));
-                    if (!cliente.equals(selectcliente)) {
-                        clienteList.add(cliente);
-                    }
-
-                }
-            }
-        } catch (SQLException e) {
-            Util.showAlert("Ah ocurrido un error en la base de datos al obtener los datos de los clientes" + e,
-                    Alert.AlertType.ERROR);
+    private void reloadTable(Cliente c) {
+        List<Cliente> clienteList2 = new ArrayList<>();
+        if (c != null) {
+            clienteList2.add(c);
         }
+        for (Cliente cliente : clienteList) {
+            if (!c.equals(c)) {
+                clienteList2.add(cliente);
+            }
+        }
+        clienteList.clear();
+        clienteList = clienteList2;
     }
-
     private Cliente obtenerClienteSeleccionado() {
         Cliente clienteSeleccionado = tableClientes.getSelectionModel().getSelectedItem();
         return clienteSeleccionado;
