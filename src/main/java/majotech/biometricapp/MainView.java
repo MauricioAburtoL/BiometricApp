@@ -15,6 +15,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
@@ -52,6 +53,8 @@ public class MainView implements Initializable {
     private TableColumn<Cliente, String> direccion;
     @FXML
     private TableColumn<Cliente, Boolean> Moroso;
+    @FXML
+    private TextField tfBuscar;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
