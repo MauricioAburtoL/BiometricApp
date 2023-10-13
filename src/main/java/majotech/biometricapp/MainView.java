@@ -8,6 +8,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,6 +28,7 @@ import majotech.biometricapp.Model.Cliente;
 import majotech.biometricapp.Util.InitializableController;
 import majotech.biometricapp.Util.Util;
 import majotech.biometricapp.Util.LectorHuella;
+
 
 public class MainView implements Initializable, InitializableController {
 
@@ -58,7 +64,7 @@ public class MainView implements Initializable, InitializableController {
     private TextField tfBuscar;
 
     private int sucursalB;
-
+    private PauseTransition pause;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         num_Cliente.setCellValueFactory(new PropertyValueFactory<>("numCliente"));
@@ -73,6 +79,17 @@ public class MainView implements Initializable, InitializableController {
         colonia.setCellValueFactory(new PropertyValueFactory<>("colonia"));
         direccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         Moroso.setCellValueFactory(new PropertyValueFactory<>("moroso"));
+//        tfBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
+//            // Cancela la búsqueda anterior si se está ejecutando.
+//            if (pause != null) {
+//                pause.setOnFinished(null);
+//            }
+//
+//            // Crea un nuevo PauseTransition de 500 milisegundos (ajusta el valor según tus necesidades).
+//            pause = new PauseTransition(Duration.millis(500));
+//            pause.setOnFinished(event -> actualizarTablaClientesFiltro(tfBuscar.getText()));
+//            pause.play();
+//        });
     }
 
     @Override
@@ -183,19 +200,32 @@ public class MainView implements Initializable, InitializableController {
         }
     }
 
-    private void reloadTable(Cliente c) {
-        List<Cliente> clienteList2 = new ArrayList<>();
-        if (c != null) {
-            clienteList2.add(c);
-        }
-        for (Cliente cliente : clienteList) {
-            if (!c.equals(c)) {
-                clienteList2.add(cliente);
+    private void actualizarTablaClientesFiltro(String filtro) {
+
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() {
+                Platform.runLater(() -> {
+                    // Si el filtro está vacío, muestra todos los clientes en la tabla.
+                    if (filtro.isEmpty()) {
+                        tableClientes.setItems(FXCollections.observableArrayList(clienteList));
+                    } else {
+                        // Filtra los clientes que coinciden con el texto del TextField en la columna "nombre".
+                        List<Cliente> clientesFiltrados = clienteList.stream()
+                                .filter(cliente -> cliente.getNombre().toLowerCase().contains(filtro.toLowerCase()))
+                                .collect(Collectors.toList());
+
+                        // Actualiza la tabla con los clientes filtrados.
+                        tableClientes.setItems(FXCollections.observableArrayList(clientesFiltrados));
+                    }
+                });
+                return null;
             }
-        }
-        clienteList.clear();
-        clienteList = clienteList2;
+        };
+
+        new Thread(task).start();
     }
+
     private Cliente obtenerClienteSeleccionado() {
         Cliente clienteSeleccionado = tableClientes.getSelectionModel().getSelectedItem();
         return clienteSeleccionado;

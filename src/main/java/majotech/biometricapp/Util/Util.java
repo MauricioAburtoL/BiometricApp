@@ -20,20 +20,22 @@ public class Util {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
     public static void closeCurrentWindow(Node source) {
         Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
+
     public static void showAlertWithAutoClose(Alert.AlertType alertType, String title, String headerText, Duration duration) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText("Este mensaje se cerra en automatico");
         Timeline timeline = new Timeline(new KeyFrame(duration, ae -> alert.close()));
-        timeline.setCycleCount(1); 
+        timeline.setCycleCount(1);
         timeline.play();
 
-        alert.showAndWait(); 
+        alert.showAndWait();
     }
 
     public static byte[] obtenerDatosBMP(String name) throws IOException {
@@ -60,25 +62,25 @@ public class Util {
             e.printStackTrace();
         }
     }
-    
+
     public static <T> void openView(String fxmlPath, String titulo, Class<T> controllerClass, Object data) {
-    try {
-        FXMLLoader fxmlLoader = new FXMLLoader(Util.class.getResource("/majotech/biometricapp/" + fxmlPath + ".fxml"));
-        AnchorPane ventanaPane = fxmlLoader.load();
-        T controller = controllerClass.getDeclaredConstructor().newInstance();
-        controller = fxmlLoader.getController();
-        if (controller instanceof InitializableController) {
-            ((InitializableController) controller).initData(data);
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(Util.class.getResource("/majotech/biometricapp/" + fxmlPath + ".fxml"));
+            AnchorPane ventanaPane = fxmlLoader.load();
+            T controller = controllerClass.getDeclaredConstructor().newInstance();
+            controller = fxmlLoader.getController();
+            if (controller instanceof InitializableController) {
+                ((InitializableController) controller).initData(data);
+            }
+
+            Stage ventanaStage = new Stage();
+            ventanaStage.initModality(Modality.APPLICATION_MODAL);
+            ventanaStage.setTitle(titulo);
+            ventanaStage.setScene(new Scene(ventanaPane));
+            ventanaStage.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        Stage ventanaStage = new Stage();
-        ventanaStage.initModality(Modality.APPLICATION_MODAL);
-        ventanaStage.setTitle(titulo);
-        ventanaStage.setScene(new Scene(ventanaPane));
-        ventanaStage.showAndWait();
-
-    } catch (Exception e) {
-        e.printStackTrace();
     }
-}
 }

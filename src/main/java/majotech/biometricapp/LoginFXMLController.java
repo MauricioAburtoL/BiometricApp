@@ -15,6 +15,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.Util.Util;
@@ -39,9 +40,12 @@ public class LoginFXMLController implements Initializable {
     @FXML
     private void IniciarSession(ActionEvent event) {
         if (verificarCredenciales(CampoCorreo.getText(), CampoPassword.getText())) {
-            System.out.println(sucursal);
+            Stage stage = (Stage) CampoCorreo.getScene().getWindow();
+
+            // Cierra la ventana actual.
+            stage.close();
             Util.openView("MainView", "Principal", LoginFXMLController.class, sucursal);
-            
+
         } else {
             System.out.println("No son correctas");
         }

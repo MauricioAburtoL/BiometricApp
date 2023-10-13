@@ -496,7 +496,7 @@ public class LectorHuella {
             clienteList2.add(c);
         }
         for (Cliente cliente : clienteList) {
-            if (!c.equals(c)) {
+            if (!c.equals(cliente)) {
                 clienteList2.add(cliente);
             }
         }
