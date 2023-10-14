@@ -79,8 +79,8 @@ public class MainView implements Initializable, InitializableController {
         colonia.setCellValueFactory(new PropertyValueFactory<>("colonia"));
         direccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         Moroso.setCellValueFactory(new PropertyValueFactory<>("moroso"));
-       tfBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
-           // Cancela la búsqueda anterior si se está ejecutando.
+        tfBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
+            // Cancela la búsqueda anterior si se está ejecutando.
             if (pause != null) {
                 pause.setOnFinished(null);
             }
