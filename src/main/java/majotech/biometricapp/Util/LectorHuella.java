@@ -121,12 +121,10 @@ public class LectorHuella {
         mbStop = false;
         WorkThread workThread = new WorkThread();
         workThread.start();
-        Util.showAlertWithAutoClose(Alert.AlertType.CONFIRMATION, "Lector", "Lector Listo", Duration.seconds(1));
     }
 
     public void closeSensor() {
         FreeSensor();
-        Util.showAlertWithAutoClose(Alert.AlertType.CONFIRMATION, "Lector", "Lector Terminado", Duration.ZERO);
     }
 
     public static int byteArrayToInt(byte[] bytes) {
@@ -184,7 +182,7 @@ public class LectorHuella {
                 writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
                 FreeSensor();
                 if (!prueba()) {
-
+                    Util.showAlert("Error al momento de hacer la comparacion: Verifica el lector", Alert.AlertType.ERROR);
                 }
             } else {
                 writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + TFCurp.getText() + ".bmp");
@@ -363,58 +361,50 @@ public class LectorHuella {
     public boolean prueba() {
 
         String pathGen = "src\\main\\java\\majotech\\biometricapp\\resources\\";
-        try {
-            Map<Integer, byte[]> fingerprintsMap = fetchFingerprintsFromDatabase();
-            if (fingerprintsMap == null) {
-                return false;
-            }
-            byte[] probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
-            FingerprintImage probeImage = new FingerprintImage(probeBytes);
-            FingerprintTemplate probe = new FingerprintTemplate(probeImage);
-
-            FingerprintMatcher matcher = new FingerprintMatcher(probe);
-
-            double threshold = 40;
-
-            for (Map.Entry<Integer, byte[]> entry : fingerprintsMap.entrySet()) {
-                int id = entry.getKey();
-                byte[] candidateBytes = entry.getValue();
-
-                FingerprintImage candidateImage = new FingerprintImage(candidateBytes);
-                FingerprintTemplate candidate = new FingerprintTemplate(candidateImage);
-
-                double similarity = matcher.match(candidate);
-
-                if (similarity >= threshold) {
-
-                    // Seleccionar el registro en la tabla correspondiente al ID
-                    for (Cliente cliente : clienteList) {
-                        if (cliente.getIdCliente() == id) {
-                            Platform.runLater(() -> {
-                                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario encontrado es: " + cliente.getNombre(), Duration.seconds(3));
-                            });
-                            System.out.println(cliente);
-
-                            reloadTable(cliente);
-                            tableClientes.getSelectionModel().select(cliente);
-                            return true;
-                        }
+        Map<Integer, byte[]> fingerprintsMap = fetchFingerprintsFromDatabase();
+        if (fingerprintsMap == null) {
+            return false;
+        }
+        if(imgbuf == null){
+            return false;
+        }
+        byte[] probeBytes = imgbuf;
+        //byte[] probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
+        FingerprintImage probeImage = new FingerprintImage(probeBytes);
+        FingerprintTemplate probe = new FingerprintTemplate(probeImage);
+        FingerprintMatcher matcher = new FingerprintMatcher(probe);
+        double threshold = 40;
+        for (Map.Entry<Integer, byte[]> entry : fingerprintsMap.entrySet()) {
+            int id = entry.getKey();
+            byte[] candidateBytes = entry.getValue();
+            
+            FingerprintImage candidateImage = new FingerprintImage(candidateBytes);
+            FingerprintTemplate candidate = new FingerprintTemplate(candidateImage);
+            
+            double similarity = matcher.match(candidate);
+            
+            if (similarity >= threshold) {
+                
+                // Seleccionar el registro en la tabla correspondiente al ID
+                for (Cliente cliente : clienteList) {
+                    if (cliente.getIdCliente() == id) {
+                        Platform.runLater(() -> {
+                            Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario encontrado es: " + cliente.getNombre(), Duration.seconds(3));
+                        });
+                        System.out.println(cliente);
+                        
+                        reloadTable(cliente);
+                        tableClientes.getSelectionModel().select(cliente);
+                        return true;
                     }
-
                 }
 
             }
-            Platform.runLater(() -> {
-                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario no encontrado", "No se encontro ningun usuario con esta huella", Duration.ZERO);
-            });
 
-            return false;
-
-        } catch (IOException ex) {
-            System.out.println(ex);
-            Logger.getLogger(MainView.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        Platform.runLater(() -> {
+            Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario no encontrado", "No se encontro ningun usuario con esta huella", Duration.ZERO);
+        });
         return false;
     }
 
@@ -443,53 +433,6 @@ public class LectorHuella {
 
         return fingerprintsMap;
     }
-
-    private void loadClientesFromDatabase2(Cliente selectcliente) {
-        clienteList.add(selectcliente);
-        Conexion connection = new Conexion();
-        String query = "SELECT * FROM clientes";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            if (preparedStatement == null) {
-                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
-                return;
-            }
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    Cliente cliente = new Cliente();
-                    cliente.setIdCliente(resultSet.getInt("id_cliente"));
-                    cliente.setNumCliente(resultSet.getInt("num_cliente"));
-                    cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
-                    cliente.setCurp(resultSet.getString("curp"));
-                    cliente.setNombre(resultSet.getString("nombre"));
-                    cliente.setTelefono(resultSet.getString("telefono"));
-                    cliente.setSexo(resultSet.getString("sexo"));
-                    cliente.setPais(resultSet.getString("pais"));
-                    cliente.setEstado(resultSet.getString("estado"));
-                    cliente.setMunicipio(resultSet.getString("municipio"));
-                    cliente.setColonia(resultSet.getString("colonia"));
-                    cliente.setDireccion(resultSet.getString("direccion"));
-                    cliente.setMoroso(resultSet.getBoolean("moroso"));
-                    if (!cliente.equals(selectcliente)) {
-                        clienteList.add(cliente);
-                    }
-
-                }
-            }
-        } catch (SQLException e) {
-            Util.showAlert("Ah ocurrido un error en la base de datos al obtener los datos de los clientes" + e,
-                    Alert.AlertType.ERROR);
-        }
-    }
-
-    public void actualizarTablaClientes2(Cliente selectcliente) {
-        clienteList.clear();
-
-        loadClientesFromDatabase2(selectcliente);
-
-        tableClientes.getItems().clear();
-        tableClientes.getItems().addAll(clienteList);
-    }
-
     private void reloadTable(Cliente c) {
         List<Cliente> clienteList2 = new ArrayList<>();
         if (c != null) {

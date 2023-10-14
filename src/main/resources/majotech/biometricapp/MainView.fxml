@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane id="AnchorPane" prefHeight="653.0" prefWidth="1423.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="majotech.biometricapp.MainView">
+<AnchorPane id="AnchorPane" prefHeight="600.0" prefWidth="1200.0" style="-fx-background-color: #FFFFFF;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="majotech.biometricapp.MainView">
    <children>
       <VBox layoutX="-4.0" layoutY="91.0" prefHeight="563.0" prefWidth="244.0" style="-fx-background-color: #008F59;">
          <children>
