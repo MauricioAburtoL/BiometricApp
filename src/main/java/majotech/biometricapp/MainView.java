@@ -79,17 +79,17 @@ public class MainView implements Initializable, InitializableController {
         colonia.setCellValueFactory(new PropertyValueFactory<>("colonia"));
         direccion.setCellValueFactory(new PropertyValueFactory<>("direccion"));
         Moroso.setCellValueFactory(new PropertyValueFactory<>("moroso"));
-//        tfBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
-//            // Cancela la búsqueda anterior si se está ejecutando.
-//            if (pause != null) {
-//                pause.setOnFinished(null);
-//            }
-//
-//            // Crea un nuevo PauseTransition de 500 milisegundos (ajusta el valor según tus necesidades).
-//            pause = new PauseTransition(Duration.millis(500));
-//            pause.setOnFinished(event -> actualizarTablaClientesFiltro(tfBuscar.getText()));
-//            pause.play();
-//        });
+       tfBuscar.textProperty().addListener((observable, oldValue, newValue) -> {
+           // Cancela la búsqueda anterior si se está ejecutando.
+            if (pause != null) {
+                pause.setOnFinished(null);
+            }
+
+            // Crea un nuevo PauseTransition de 500 milisegundos (ajusta el valor según tus necesidades).
+            pause = new PauseTransition(Duration.millis(500));
+            pause.setOnFinished(event -> actualizarTablaClientesFiltro(tfBuscar.getText()));
+            pause.play();
+        });
     }
 
     @Override
