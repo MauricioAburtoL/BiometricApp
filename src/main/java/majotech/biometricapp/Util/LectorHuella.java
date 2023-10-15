@@ -23,12 +23,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.MainView;
@@ -40,9 +42,10 @@ import majotech.biometricapp.Model.Cliente;
  */
 public class LectorHuella {
 
-    private String pathImage = "src\\main\\java\\majotech\\biometricapp\\resources\\";
+    private String pathImage = System.getProperty("user.dir");
     private ImageView dedo;
     private TextField TFCurp;
+    private Label lbStatus;
     private List<Cliente> clienteList = new ArrayList<>();
     private TableView<Cliente> tableClientes;
     private boolean busqueda;
@@ -64,16 +67,20 @@ public class LectorHuella {
     private byte[] lastRegTemp = new byte[2048];
     private boolean bIdentify = true;
 
-    public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF) {
+    public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF, Label lb) {
+    
+        
         if (b) {
             this.clienteList = cl;
             this.tableClientes = tC;
             this.busqueda = b;
+            this.lbStatus = lb;
 
         } else {
             this.busqueda = b;
             this.dedo = d;
-            this.TFCurp = TF;
+            this.TFCurp = TF;   
+            this.lbStatus = lb;
         }
         if (0 != mhDevice) {
             Util.showAlertWithAutoClose(Alert.AlertType.WARNING, "Error en el Lector", "Cierre el lector o desconectelo un momento", Duration.seconds(5));
@@ -87,18 +94,18 @@ public class LectorHuella {
         iFid = 1;
         enroll_idx = 0;
         if (FingerprintSensorErrorCode.ZKFP_ERR_OK != FingerprintSensorEx.Init()) {
-            Util.showAlert("Fallo al inicar el Lector!", Alert.AlertType.ERROR);
+            Util.showAlert("Fallo al inicar el Lector!", Alert.AlertType.ERROR);         
             return;
         }
         ret = FingerprintSensorEx.GetDeviceCount();
         if (ret < 0) {
-            Util.showAlert("Ningun Dispositivo Conectado!", Alert.AlertType.WARNING);
+            Util.showAlert("Ningun Dispositivo Conectado!", Alert.AlertType.WARNING);          
             FreeSensor();
             return;
         }
         if (0 == (mhDevice = FingerprintSensorEx.OpenDevice(0))) {
             Util.showAlert("Fallo con el lector, ret = " + ret + "!", Alert.AlertType.ERROR);
-            FreeSensor();
+            FreeSensor(); 
             return;
         }
         if (0 == (mhDB = FingerprintSensorEx.DBInit())) {
@@ -119,8 +126,29 @@ public class LectorHuella {
 
         imgbuf = new byte[fpWidth * fpHeight];
         mbStop = false;
+        lbStatus.setText("Activo");
+        lbStatus.setTextFill(Color.RED);
         WorkThread workThread = new WorkThread();
         workThread.start();
+        Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Lector Listo", "Sensor listo", Duration.seconds(3));   
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() {
+                try {
+                    Thread.sleep(10000); // Espera durante 2 segundos
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                closeSensor();
+                // Cambia el color del Label a azul en el hilo de JavaFX
+                Platform.runLater(() -> lbStatus.setTextFill(Color.GREEN));
+                Platform.runLater(() -> lbStatus.setText("Desactivado"));
+                return null;
+                
+            }
+        };
+
+        new Thread(task).start();
     }
 
     public void closeSensor() {
@@ -179,17 +207,17 @@ public class LectorHuella {
     private void OnCatpureOK(byte[] imgBuf) {
         try {
             if (busqueda) {
-                writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
-                FreeSensor();
+                writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");              
+                FreeSensor();                   
                 if (!prueba()) {
                     Util.showAlert("Error al momento de hacer la comparacion: Verifica el lector", Alert.AlertType.ERROR);
                 }
             } else {
                 writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + TFCurp.getText() + ".bmp");
                 dedo.setImage(new Image(new FileInputStream(pathImage + TFCurp.getText() + ".bmp")));
-                FreeSensor();
+                FreeSensor();   
             }
-
+            
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -261,6 +289,9 @@ public class LectorHuella {
 
     private void FreeSensor() {
         mbStop = true;
+        
+        lbStatus.setTextFill(Color.GREEN);
+        Platform.runLater(() -> {lbStatus.setText("Desactivado");});
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -360,17 +391,22 @@ public class LectorHuella {
 
     public boolean prueba() {
 
-        String pathGen = "src\\main\\java\\majotech\\biometricapp\\resources\\";
+        String pathGen = System.getProperty("user.dir");
         Map<Integer, byte[]> fingerprintsMap = fetchFingerprintsFromDatabase();
         if (fingerprintsMap == null) {
             return false;
         }
-        if(imgbuf == null){
+        /*if(imgbuf == null){
+            System.out.println("Hola");
             return false;
         }
-        byte[] probeBytes = imgbuf;
-        //byte[] probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
+        byte[] probeBytes = imgbuf;*/
+        byte[] probeBytes;
+        try {
+            probeBytes = Files.readAllBytes(Paths.get(pathGen + "fingerprintBusqueda.bmp"));
+        
         FingerprintImage probeImage = new FingerprintImage(probeBytes);
+        
         FingerprintTemplate probe = new FingerprintTemplate(probeImage);
         FingerprintMatcher matcher = new FingerprintMatcher(probe);
         double threshold = 40;
@@ -391,10 +427,11 @@ public class LectorHuella {
                         Platform.runLater(() -> {
                             Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario encontrado es: " + cliente.getNombre(), Duration.seconds(3));
                         });
-                        System.out.println(cliente);
+                        
                         
                         reloadTable(cliente);
                         tableClientes.getSelectionModel().select(cliente);
+                        
                         return true;
                     }
                 }
@@ -404,7 +441,11 @@ public class LectorHuella {
         }
         Platform.runLater(() -> {
             Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario no encontrado", "No se encontro ningun usuario con esta huella", Duration.ZERO);
-        });
+        });       
+        } catch (IOException ex) {
+            Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error prueba", ex.toString(), Duration.seconds(10));
+            Logger.getLogger(LectorHuella.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return false;
     }
 

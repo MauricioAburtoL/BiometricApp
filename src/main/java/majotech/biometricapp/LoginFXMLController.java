@@ -43,7 +43,7 @@ public class LoginFXMLController implements Initializable {
             Stage stage = (Stage) CampoCorreo.getScene().getWindow();
 
             // Cierra la ventana actual.
-            stage.close();
+            
             Util.openView("MainView", "Principal", LoginFXMLController.class, sucursal);
 
         } else {

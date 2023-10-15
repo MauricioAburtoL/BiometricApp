@@ -22,6 +22,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.Model.Cliente;
@@ -65,6 +67,11 @@ public class MainView implements Initializable, InitializableController {
 
     private int sucursalB;
     private PauseTransition pause;
+
+    @FXML
+    private AnchorPane Status;
+    @FXML
+    private Label lbStatus;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         num_Cliente.setCellValueFactory(new PropertyValueFactory<>("numCliente"));
@@ -90,6 +97,7 @@ public class MainView implements Initializable, InitializableController {
             pause.setOnFinished(event -> actualizarTablaClientesFiltro(tfBuscar.getText()));
             pause.play();
         });
+
     }
 
     @Override
@@ -102,8 +110,8 @@ public class MainView implements Initializable, InitializableController {
     private void BuscarCliente(ActionEvent event) {
         tableClientes.getSelectionModel().clearSelection();
         LectorHuella lc = new LectorHuella();
-        lc.abrirSensor(clienteList, tableClientes, true, null, null);
-
+        lc.abrirSensor(clienteList, tableClientes, true, null, null,lbStatus);
+      
     }
 
     @FXML
@@ -137,9 +145,8 @@ public class MainView implements Initializable, InitializableController {
                 int filasafectadas = statement.executeUpdate();
                 if (filasafectadas != 0) {
                     Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Eliminacion Exitosa", "La Eliminacion fue Exitosa", Duration.seconds(3));
-                } else {
-
-                }
+                    actualizarTablaClientes();
+                } 
             }
         } else {
             Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Eliminacion Fallida", "No se ha podido seleccionado ningun cliente", Duration.seconds(3));

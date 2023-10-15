@@ -39,7 +39,7 @@ public class Util {
     }
 
     public static byte[] obtenerDatosBMP(String name) throws IOException {
-        String rutaArchivoBMP = "src\\main\\java\\majotech\\biometricapp\\resources\\" + name + ".bmp";
+        String rutaArchivoBMP = System.getProperty("user.dir") + name + ".bmp";
         try (FileInputStream fis = new FileInputStream(rutaArchivoBMP)) {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer);

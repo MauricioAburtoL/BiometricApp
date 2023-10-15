@@ -14,7 +14,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import javafx.util.converter.IntegerStringConverter;
 import majotech.biometricapp.Config.Conexion;
@@ -45,6 +47,8 @@ public class AgregarClienteFXMLController implements Initializable {
     private ImageView dedo;
     @FXML
     private TextField TFCurp;
+    @FXML
+    private Label tfStatus;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -114,11 +118,16 @@ public class AgregarClienteFXMLController implements Initializable {
             Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
             return;
         }
-        lc.abrirSensor(null, null, false, dedo, TFCurp);
+        tfStatus.setText("Activo");
+        tfStatus.setTextFill(Color.RED);
+        lc.abrirSensor(null, null, false, dedo, TFCurp, tfStatus);
+        
     }
 
     @FXML
     private void closeSensor(ActionEvent event) {
+        tfStatus.setText("Desactivado");
+        tfStatus.setTextFill(Color.GREEN);
         lc.closeSensor();
     }
 }
