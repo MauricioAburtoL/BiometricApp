@@ -87,7 +87,7 @@
             </Button>
          </children>
       </VBox>
-      <ImageView fitHeight="113.0" fitWidth="344.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fitHeight="113.0" fitWidth="344.0" layoutX="-4.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../../media/logo.jpg" />
          </image></ImageView>
