@@ -251,15 +251,12 @@ public class LectorHuella {
             statement.setDate(5, Date.valueOf(LocalDate.now()));
             statement.setInt(6, Integer.parseInt(c.getTFCantidadPrestamo().getText()));
             statement.setInt(7,c.getInteres());
-            statement.setInt(8, (c.getInteres()/100)*Integer.parseInt(c.getTFCantidadPrestamo().getText()));
-            statement.setInt(9, (int) (Double.parseDouble(c.getTFCantidadPrestamo().getText()) * ((c.getInteres()/100)+1)));
+            statement.setInt(8, (int)((float)c.getInteres()/100)*Integer.parseInt(c.getTFCantidadPrestamo().getText()));
+            statement.setInt(9, (int)(((float)c.getInteres()/100)+1)*Integer.parseInt(c.getTFCantidadPrestamo().getText()));
             statement.setDate(10, Date.valueOf(LocalDate.now().plusDays(7)));
             statement.setInt(11,0);
             statement.setInt(12,0);
-            statement.setDate(13, Date.valueOf(LocalDate.now()));
-            
-            System.out.println(Float.parseFloat((c.getInteres/100)+""));
-            
+            statement.setDate(13, Date.valueOf(LocalDate.now()));            
             int filasAfectadas = statement.executeUpdate();
             Util.closeCurrentWindow((Node)c.getEvent().getSource());
             if (filasAfectadas != 0) {
