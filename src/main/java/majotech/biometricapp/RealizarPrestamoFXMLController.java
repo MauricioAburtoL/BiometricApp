@@ -104,7 +104,7 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     public Sucursal obtenerInfoSucursal(int idSucursal) {
         Sucursal sucursal = new Sucursal();
         Conexion connection = new Conexion();
-        String sql = "SELECT * FROM sucursal WHERE id_sucursal = ?";
+        String sql = "SELECT * FROM sucursal WHERE id_sucursal = ? and Moroso = 0";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             if (preparedStatement == null) {
                 Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
