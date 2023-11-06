@@ -66,11 +66,12 @@ public class AutorizarPrestamosFXMLController implements Initializable, Initiali
     }
 
     @FXML
-    private void PrestarCliente(ActionEvent event) {
+    private void PrestarCliente(ActionEvent event) throws InterruptedException {
         Cliente clienteSeleccionado = obtenerClienteSeleccionado();
         clienteSeleccionado.setId_usuario(usu.getIdUsuario());
         if (clienteSeleccionado != null) {
             Util.openView("RealizarPrestamoFXML", "Confirmar Prestamo", RealizarPrestamoFXMLController.class, clienteSeleccionado);
+            Thread.sleep(50);
             actualizarTablaClientes();
         } else {
             Util.showAlertWithAutoClose(Alert.AlertType.WARNING, "Advertencia", "Se debe de seleccion un cliente para editar", Duration.seconds(3));

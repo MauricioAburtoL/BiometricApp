@@ -4,11 +4,15 @@
  */
 package majotech.biometricapp.Model;
 
+import javafx.event.ActionEvent;
+import javafx.scene.control.TextField;
+
 /**
  *
  * @author JoaquinGA
  */
 public class Cliente {
+
     private int idCliente;
     private Integer numCliente;
     private Integer idSucursal;
@@ -23,15 +27,41 @@ public class Cliente {
     private String direccion;
     private Boolean moroso;
     private int id_usuario;
+    private TextField TFCantidadPrestamo;
+    private ActionEvent event;
+    private int interes;
+
+    public int getInteres() {
+        return interes;
+    }
+
+    public void setInteres(int interes) {
+        this.interes = interes;
+    }
+
+    public ActionEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(ActionEvent event) {
+        this.event = event;
+    }
 
     public int getId_usuario() {
         return id_usuario;
     }
 
+    public TextField getTFCantidadPrestamo() {
+        return TFCantidadPrestamo;
+    }
+
+    public void setTFCantidadPrestamo(TextField TFCantidadPrestamo) {
+        this.TFCantidadPrestamo = TFCantidadPrestamo;
+    }
+
     public void setId_usuario(int id_usuario) {
         this.id_usuario = id_usuario;
     }
-    
 
     public int getIdCliente() {
         return idCliente;

@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -63,16 +65,17 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     @FXML
     private TextField TFSexo;
     @FXML
-    private static TextField TFCantidadPrestamo;
+    private TextField TFCantidadPrestamo;
     @FXML
-    private ComboBox<?> CBIntereses;
+    private ComboBox<Integer> CBIntereses;
 
     /**
      * Initializes the controller class.
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
+        lc = new LectorHuella(); // TODO
+  
     }
 
     @Override
@@ -92,6 +95,9 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
         Sucursal s = obtenerInfoSucursal(c.getIdSucursal());
         TFMunicipio.setText(s.getMunicipiio());
         TFColonia.setText(c.getColonia());
+        ObservableList<Integer> items = FXCollections.observableArrayList(10,15);       
+        CBIntereses.setItems(items);
+        CBIntereses.setValue(1);
     }
 
     @FXML
@@ -104,14 +110,18 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     }
 
     @FXML
-    private void AutorizarPrestamo(ActionEvent event) {
+    private void AutorizarPrestamo(ActionEvent event) throws InterruptedException {
+        cliente.setEvent(event);
         if (TFCurp.getText().isEmpty()) {
             Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
             return;
         }
         tfStatus.setText("Activo");
         tfStatus.setTextFill(Color.RED);
+        cliente.setTFCantidadPrestamo(TFCantidadPrestamo);
+        cliente.setInteres(CBIntereses.getValue());
         lc.abrirSensor(null, null, true, dedo, TFCurp, tfStatus, cliente);
+
     }
 
     @FXML
@@ -119,37 +129,7 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     }
 
     public static void crearPrestamo(Cliente c) {
-        Conexion connection = new Conexion();
-        String sql = "INSERT INTO prestamos(id_cliente,id_sucursal,id_usuario, total_prestamo, fecha_prestamo, resto_adeudo, interes, referendo, liquidacion, fecha_pago, dias_mora, pagado, fecha_ActMora)"
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            if (statement == null) {
-                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
-                return;
-            }
-            statement.setInt(1, c.getIdCliente());
-            statement.setInt(2, c.getIdSucursal());
-            statement.setInt(3, c.getId_usuario());
-            statement.setInt(4, Integer.parseInt(TFCantidadPrestamo.getText()));
-            statement.setDate(5, Date.valueOf(LocalDate.now()));
-            statement.setInt(6, Integer.parseInt(TFCantidadPrestamo.getText()));
-            statement.setInt(7,15);
-            statement.setInt(8, 150);
-            statement.setInt(9, (int) (Double.parseDouble(TFCantidadPrestamo.getText()) * 1.15));
-            statement.setDate(10, Date.valueOf(LocalDate.now().plusDays(7))  );
-            statement.setInt(11,0);
-            statement.setInt(12,0);
-            statement.setDate(13,Date.valueOf(LocalDate.now()));
-            
-            int filasAfectadas = statement.executeUpdate();
-            if (filasAfectadas != 0) {
-                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Insercion exitosa", "Se ha insertado el cliente", Duration.seconds(3));
-            } else {
-                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Insercion Fallida", "Reviza los campos", Duration.seconds(3));
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(LectorHuella.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
     }
 
     public Sucursal obtenerInfoSucursal(int idSucursal) {

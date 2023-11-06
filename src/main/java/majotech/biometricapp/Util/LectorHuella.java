@@ -13,9 +13,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
@@ -233,7 +236,41 @@ public class LectorHuella {
                     writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
                     dedo.setImage(new Image(new FileInputStream(pathImage + "fingerprintBusqueda.bmp")));
                     if (prueba(id_cliente)) {
-                        RealizarPrestamoFXMLController.crearPrestamo(c);
+                         Conexion connection = new Conexion();
+        String sql = "INSERT INTO prestamos(id_cliente,id_sucursal,id_usuario, total_prestamo, fecha_prestamo, resto_adeudo, interes, referendo, liquidacion, fecha_pago, dias_mora, pagado, fecha_ActMora)"
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (statement == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return;
+            }
+            statement.setInt(1, c.getIdCliente());
+            statement.setInt(2, c.getIdSucursal());
+            statement.setInt(3, c.getId_usuario());
+            statement.setInt(4, Integer.parseInt(c.getTFCantidadPrestamo().getText()));
+            statement.setDate(5, Date.valueOf(LocalDate.now()));
+            statement.setInt(6, Integer.parseInt(c.getTFCantidadPrestamo().getText()));
+            statement.setInt(7,c.getInteres());
+            statement.setInt(8, (c.getInteres()/100)*Integer.parseInt(c.getTFCantidadPrestamo().getText()));
+            statement.setInt(9, (int) (Double.parseDouble(c.getTFCantidadPrestamo().getText()) * ((c.getInteres()/100)+1)));
+            statement.setDate(10, Date.valueOf(LocalDate.now().plusDays(7)));
+            statement.setInt(11,0);
+            statement.setInt(12,0);
+            statement.setDate(13, Date.valueOf(LocalDate.now()));
+            
+            System.out.println(Float.parseFloat((c.getInteres/100)+""));
+            
+            int filasAfectadas = statement.executeUpdate();
+            Util.closeCurrentWindow((Node)c.getEvent().getSource());
+            if (filasAfectadas != 0) {
+                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Insercion exitosa", "Se ha insertado el cliente", Duration.seconds(3));
+
+            } else {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Insercion Fallida", "Reviza los campos", Duration.seconds(3));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(LectorHuella.class.getName()).log(Level.SEVERE, null, ex);
+        }
                     }
                 }
 
