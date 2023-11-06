@@ -116,7 +116,7 @@ public class MainView implements Initializable, InitializableController {
 
     @FXML
     private void AgregarCliente(ActionEvent event) {
-        Util.openView("AgregarClienteFXML", "Agregar Cliente");
+        Util.openView("AgregarClienteFXML", "Agregar Cliente", AgregarClienteFXMLController.class, sucursalB);
         actualizarTablaClientes();
     }
 

@@ -20,10 +20,11 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import javafx.util.converter.IntegerStringConverter;
 import majotech.biometricapp.Config.Conexion;
+import majotech.biometricapp.Util.InitializableController;
 import majotech.biometricapp.Util.Util;
 import majotech.biometricapp.Util.LectorHuella;
 
-public class AgregarClienteFXMLController implements Initializable {
+public class AgregarClienteFXMLController implements Initializable, InitializableController {
 
     LectorHuella lc;
 
@@ -49,6 +50,7 @@ public class AgregarClienteFXMLController implements Initializable {
     private TextField TFCurp;
     @FXML
     private Label tfStatus;
+    private int idSucursal;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -58,6 +60,11 @@ public class AgregarClienteFXMLController implements Initializable {
         TextFormatter<Integer> telFormatter = new TextFormatter<>(new IntegerStringConverter(), 0,
                 c -> c.getControlNewText().matches("\\d*") ? c : null);
         TFTelefono.setTextFormatter(telFormatter);
+    }
+    @Override
+    
+    public void initData(Object data) {
+        this.idSucursal = (int) data;
     }
 
     @FXML
@@ -130,4 +137,6 @@ public class AgregarClienteFXMLController implements Initializable {
         tfStatus.setTextFill(Color.GREEN);
         lc.closeSensor();
     }
+
+    
 }
