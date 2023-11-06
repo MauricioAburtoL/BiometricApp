@@ -120,7 +120,7 @@ public class AgregarClienteFXMLController implements Initializable {
         }
         tfStatus.setText("Activo");
         tfStatus.setTextFill(Color.RED);
-        lc.abrirSensor(null, null, false, dedo, TFCurp, tfStatus);
+        lc.abrirSensor(null, null, false, dedo, TFCurp, tfStatus, 0);
         
     }
 

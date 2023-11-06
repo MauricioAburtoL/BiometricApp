@@ -110,7 +110,7 @@ public class MainView implements Initializable, InitializableController {
     private void BuscarCliente(ActionEvent event) {
         tableClientes.getSelectionModel().clearSelection();
         LectorHuella lc = new LectorHuella();
-        lc.abrirSensor(clienteList, tableClientes, true, null, null,lbStatus);
+        lc.abrirSensor(clienteList, tableClientes, true, null, null,lbStatus,0);
       
     }
 
@@ -173,7 +173,6 @@ public class MainView implements Initializable, InitializableController {
         if (sucursalB != 1) {
             query += " WHERE id_sucursal = ?";
         }
-        System.out.println(query);
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             if (preparedStatement == null) {
                 Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));

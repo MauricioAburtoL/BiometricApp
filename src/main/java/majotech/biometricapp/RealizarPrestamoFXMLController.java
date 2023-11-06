@@ -17,11 +17,13 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.Model.Cliente;
 import majotech.biometricapp.Model.Sucursal;
 import majotech.biometricapp.Util.InitializableController;
+import majotech.biometricapp.Util.LectorHuella;
 import majotech.biometricapp.Util.Util;
 
 /**
@@ -31,6 +33,7 @@ import majotech.biometricapp.Util.Util;
  */
 public class RealizarPrestamoFXMLController implements Initializable, InitializableController{
     Cliente cliente;
+    LectorHuella lc;
     @FXML
     private TextField TFEstado;
     @FXML
@@ -87,6 +90,13 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
 
     @FXML
     private void openSensor(ActionEvent event) {
+        if (TFCurp.getText().isEmpty()) {
+            Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
+            return;
+        }
+        tfStatus.setText("Activo");
+        tfStatus.setTextFill(Color.RED);
+        lc.abrirSensor(null, null, true, dedo, TFCurp, tfStatus, cliente.getIdCliente());
     }
 
     @FXML
