@@ -44,7 +44,7 @@ public class LoginFXMLController implements Initializable {
 
             // Cierra la ventana actual.
             
-            Util.openView("MenuFXML", "Principal", LoginFXMLController.class, sucursal);
+            Util.openView("MenuFXML", "Principal", MenuFXMLController.class, sucursal);
 
         } else {
             System.out.println("No son correctas");
