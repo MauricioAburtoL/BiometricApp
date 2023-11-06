@@ -22,6 +22,16 @@ public class Cliente {
     private String colonia;
     private String direccion;
     private Boolean moroso;
+    private int id_usuario;
+
+    public int getId_usuario() {
+        return id_usuario;
+    }
+
+    public void setId_usuario(int id_usuario) {
+        this.id_usuario = id_usuario;
+    }
+    
 
     public int getIdCliente() {
         return idCliente;

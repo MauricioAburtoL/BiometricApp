@@ -110,7 +110,7 @@ public class MainView implements Initializable, InitializableController {
     private void BuscarCliente(ActionEvent event) {
         tableClientes.getSelectionModel().clearSelection();
         LectorHuella lc = new LectorHuella();
-        lc.abrirSensor(clienteList, tableClientes, true, null, null,lbStatus,0);
+        lc.abrirSensor(clienteList, tableClientes, true, null, null,lbStatus,null);
       
     }
 

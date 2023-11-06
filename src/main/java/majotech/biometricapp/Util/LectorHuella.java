@@ -35,6 +35,7 @@ import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.MainView;
 import majotech.biometricapp.Model.Cliente;
+import majotech.biometricapp.RealizarPrestamoFXMLController;
 
 /**
  *
@@ -42,6 +43,7 @@ import majotech.biometricapp.Model.Cliente;
  */
 public class LectorHuella {
 
+    private int id_sucursal;
     private int id_cliente;
     private String pathImage = System.getProperty("user.dir");
     private ImageView dedo;
@@ -67,11 +69,14 @@ public class LectorHuella {
     private byte[][] regtemparray = new byte[3][2048];
     private byte[] lastRegTemp = new byte[2048];
     private boolean bIdentify = true;
+    private int id_usuario;
+    Cliente c;
+    public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF, Label lb, Cliente c) {
 
-    public void abrirSensor(List<Cliente> cl, TableView<Cliente> tC, boolean b, ImageView d, TextField TF, Label lb, int id_cliente) {
-
-        if (id_cliente != 0) {
-            this.id_cliente = id_cliente;
+        if (c != null) {
+            this.id_usuario = c.getId_usuario();
+            this.id_cliente = c.getIdCliente();
+            this.c = c;
             if (b) {
                 this.busqueda = b;
                 this.dedo = d;
@@ -218,7 +223,7 @@ public class LectorHuella {
     private void OnCatpureOK(byte[] imgBuf) {
         try {
             if (busqueda) {
-                if (id_cliente != 0) {
+                if (id_cliente == 0) {
                     writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
                     FreeSensor();
                     if (!prueba(0)) {
@@ -228,7 +233,7 @@ public class LectorHuella {
                     writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
                     dedo.setImage(new Image(new FileInputStream(pathImage + "fingerprintBusqueda.bmp")));
                     if (prueba(id_cliente)) {
-                        System.out.println("Existe");
+                        RealizarPrestamoFXMLController.crearPrestamo(c);
                     }
                 }
 
@@ -415,9 +420,8 @@ public class LectorHuella {
         Map<Integer, byte[]> fingerprintsMap = new HashMap<>();
         String pathGen = System.getProperty("user.dir");
         if (id_cliente != 0) {
-
             Conexion connection = new Conexion();
-            String sql = "SELECT Huella FROM cliente WHERE id_cliente = ?";
+            String sql = "SELECT Huella, id_sucursal FROM clientes WHERE id_cliente = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 if (preparedStatement == null) {
                     Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
@@ -426,6 +430,7 @@ public class LectorHuella {
                 preparedStatement.setInt(1, id_cliente);
                 try (ResultSet result = preparedStatement.executeQuery()) {
                     while (result.next()) {
+                        this.id_sucursal = result.getInt("id_sucursal");
                         byte[] fingerprintBytes = result.getBytes("Huella");
                         fingerprintsMap.put(id_cliente, fingerprintBytes);
                     }
@@ -458,7 +463,10 @@ public class LectorHuella {
                 double similarity = matcher.match(candidate);
 
                 if (similarity >= threshold) {
-                    if(id_cliente != 0){
+                    if (id_cliente != 0) {
+                        Platform.runLater(() -> {
+                            Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Usuario encontrado", "El usuario se encontro", Duration.seconds(3));
+                        });
                         return true;
                     }
                     // Seleccionar el registro en la tabla correspondiente al ID

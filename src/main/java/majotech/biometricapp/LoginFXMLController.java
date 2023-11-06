@@ -18,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
+import majotech.biometricapp.Model.Usuario;
 import majotech.biometricapp.Util.Util;
 
 public class LoginFXMLController implements Initializable {
@@ -28,6 +29,7 @@ public class LoginFXMLController implements Initializable {
     private TextField CampoCorreo;
 
     private int sucursal;
+    Usuario usu;
 
     /**
      * Initializes the controller class.
@@ -44,7 +46,7 @@ public class LoginFXMLController implements Initializable {
 
             // Cierra la ventana actual.
             
-            Util.openView("MenuFXML", "Principal", MenuFXMLController.class, sucursal);
+            Util.openView("MenuFXML", "Principal", MenuFXMLController.class, usu);
 
         } else {
             System.out.println("No son correctas");
@@ -54,7 +56,7 @@ public class LoginFXMLController implements Initializable {
 
     public boolean verificarCredenciales(String nombreUsuario, String contrasena) {
         Conexion connection = new Conexion();
-        String sql = "SELECT id_sucursal FROM usuarios WHERE email = ? AND pass = ?";
+        String sql = "SELECT * FROM usuarios WHERE email = ? AND pass = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             if (preparedStatement == null) {
                 Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
@@ -64,7 +66,9 @@ public class LoginFXMLController implements Initializable {
             preparedStatement.setString(2, contrasena);
             try (ResultSet result = preparedStatement.executeQuery()) {
                 while (result.next()) {
-                    sucursal = result.getInt("id_sucursal");
+                    
+                    this.usu.setIdSucursal(result.getInt("id_sucursal"));
+                    this.usu.setIdUsuario(result.getInt("id_usuario"));
                     return true; // Si hay un resultado, el usuario y contraseña son correctos.    
                 }
             }

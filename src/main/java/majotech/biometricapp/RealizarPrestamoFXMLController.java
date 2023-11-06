@@ -5,13 +5,18 @@
 package majotech.biometricapp;
 
 import java.net.URL;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -31,7 +36,8 @@ import majotech.biometricapp.Util.Util;
  *
  * @author ADMIN
  */
-public class RealizarPrestamoFXMLController implements Initializable, InitializableController{
+public class RealizarPrestamoFXMLController implements Initializable, InitializableController {
+
     Cliente cliente;
     LectorHuella lc;
     @FXML
@@ -57,7 +63,7 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     @FXML
     private TextField TFSexo;
     @FXML
-    private TextField TFCantidadPrestamo;
+    private static TextField TFCantidadPrestamo;
     @FXML
     private ComboBox<?> CBIntereses;
 
@@ -68,14 +74,14 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }
-    
+
     @Override
     public void initData(Object data) {
-        this.cliente =  (Cliente) data;
+        this.cliente = (Cliente) data;
         LlenarInfor(cliente);
     }
-    
-    private void LlenarInfor(Cliente c){
+
+    private void LlenarInfor(Cliente c) {
         TFNombre.setText(c.getNombre());
         TFTelefono.setText(c.getTelefono());
         TFSexo.setText(c.getSexo());
@@ -90,13 +96,7 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
 
     @FXML
     private void openSensor(ActionEvent event) {
-        if (TFCurp.getText().isEmpty()) {
-            Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
-            return;
-        }
-        tfStatus.setText("Activo");
-        tfStatus.setTextFill(Color.RED);
-        lc.abrirSensor(null, null, true, dedo, TFCurp, tfStatus, cliente.getIdCliente());
+
     }
 
     @FXML
@@ -104,11 +104,52 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
     }
 
     @FXML
-    private void Guardarcliente(ActionEvent event) {
+    private void AutorizarPrestamo(ActionEvent event) {
+        if (TFCurp.getText().isEmpty()) {
+            Util.showAlert("Campo de curp vacio", Alert.AlertType.WARNING);
+            return;
+        }
+        tfStatus.setText("Activo");
+        tfStatus.setTextFill(Color.RED);
+        lc.abrirSensor(null, null, true, dedo, TFCurp, tfStatus, cliente);
     }
 
     @FXML
     private void Cancelar(ActionEvent event) {
+    }
+
+    public static void crearPrestamo(Cliente c) {
+        Conexion connection = new Conexion();
+        String sql = "INSERT INTO prestamos(id_cliente,id_sucursal,id_usuario, total_prestamo, fecha_prestamo, resto_adeudo, interes, referendo, liquidacion, fecha_pago, dias_mora, pagado, fecha_ActMora)"
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            if (statement == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return;
+            }
+            statement.setInt(1, c.getIdCliente());
+            statement.setInt(2, c.getIdSucursal());
+            statement.setInt(3, c.getId_usuario());
+            statement.setInt(4, Integer.parseInt(TFCantidadPrestamo.getText()));
+            statement.setDate(5, Date.valueOf(LocalDate.now()));
+            statement.setInt(6, Integer.parseInt(TFCantidadPrestamo.getText()));
+            statement.setInt(7,15);
+            statement.setInt(8, 150);
+            statement.setInt(9, (int) (Double.parseDouble(TFCantidadPrestamo.getText()) * 1.15));
+            statement.setDate(10, Date.valueOf(LocalDate.now().plusDays(7))  );
+            statement.setInt(11,0);
+            statement.setInt(12,0);
+            statement.setDate(13,Date.valueOf(LocalDate.now()));
+            
+            int filasAfectadas = statement.executeUpdate();
+            if (filasAfectadas != 0) {
+                Util.showAlertWithAutoClose(Alert.AlertType.INFORMATION, "Insercion exitosa", "Se ha insertado el cliente", Duration.seconds(3));
+            } else {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Insercion Fallida", "Reviza los campos", Duration.seconds(3));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(LectorHuella.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public Sucursal obtenerInfoSucursal(int idSucursal) {
@@ -126,7 +167,7 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
                     sucursal.setNombre(result.getString("nombre"));
                     sucursal.setMunicipiio(result.getString("municipio"));
                     sucursal.setColonia(result.getString("colonia"));
-                    return sucursal;   
+                    return sucursal;
                 }
             }
         } catch (SQLException e) {
@@ -135,6 +176,5 @@ public class RealizarPrestamoFXMLController implements Initializable, Initializa
         }
         return null;
     }
-    
-    
+
 }

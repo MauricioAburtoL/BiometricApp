@@ -12,6 +12,7 @@ import javafx.fxml.Initializable;
 import majotech.biometricapp.Util.InitializableController;
 import majotech.biometricapp.Util.Util;
 import majotech.biometricapp.AutorizarPrestamosFXMLController;
+import majotech.biometricapp.Model.Usuario;
 
 /**
  * FXML Controller class
@@ -19,7 +20,7 @@ import majotech.biometricapp.AutorizarPrestamosFXMLController;
  * @author ADMIN
  */
 public class MenuFXMLController implements Initializable,InitializableController {
-    private int sucursalB;
+    private Usuario usu;
 
     /**
      * Initializes the controller class.
@@ -31,17 +32,17 @@ public class MenuFXMLController implements Initializable,InitializableController
 
     @FXML
     private void BTPrestamos(ActionEvent event) {
-         Util.openView("AutorizarPrestamosFXML", "Pagina de prestamos", AutorizarPrestamosFXMLController.class, sucursalB);
+         Util.openView("AutorizarPrestamosFXML", "Pagina de prestamos", AutorizarPrestamosFXMLController.class, usu);
     }
 
     @FXML
     private void BTAdministracion(ActionEvent event) {
-         Util.openView("MainView", "Pagina Administracion", MainView.class, sucursalB);
+         Util.openView("MainView", "Pagina Administracion", MainView.class, usu.getIdSucursal());
     }
 
     @Override
     public void initData(Object data) {
-        this.sucursalB = (int) data;
+        this.usu = (Usuario) data;
     }
     
 }

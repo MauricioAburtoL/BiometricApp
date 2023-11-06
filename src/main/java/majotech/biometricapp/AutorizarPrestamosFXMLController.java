@@ -25,6 +25,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
 import majotech.biometricapp.Config.Conexion;
 import majotech.biometricapp.Model.Cliente;
+import majotech.biometricapp.Model.Usuario;
 import majotech.biometricapp.Util.InitializableController;
 import majotech.biometricapp.Util.Util;
 
@@ -34,7 +35,7 @@ import majotech.biometricapp.Util.Util;
  * @author JoaquinGA
  */
 public class AutorizarPrestamosFXMLController implements Initializable, InitializableController {
-
+    Usuario usu;
     private int sucursalB;
     private List<Cliente> clienteList = new ArrayList<>();
     @FXML
@@ -67,6 +68,7 @@ public class AutorizarPrestamosFXMLController implements Initializable, Initiali
     @FXML
     private void PrestarCliente(ActionEvent event) {
         Cliente clienteSeleccionado = obtenerClienteSeleccionado();
+        clienteSeleccionado.setId_usuario(usu.getIdUsuario());
         if (clienteSeleccionado != null) {
             Util.openView("RealizarPrestamoFXML", "Confirmar Prestamo", RealizarPrestamoFXMLController.class, clienteSeleccionado);
             actualizarTablaClientes();
@@ -77,8 +79,8 @@ public class AutorizarPrestamosFXMLController implements Initializable, Initiali
 
     @Override
     public void initData(Object data) {
-        this.sucursalB = (int) data;
-        System.out.println(this.sucursalB);
+        this.usu = (Usuario) data;
+        this.sucursalB = usu.getIdSucursal();
         actualizarTablaClientes();
     }
 
