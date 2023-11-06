@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -76,6 +78,7 @@ public class AutorizarPrestamosFXMLController implements Initializable, Initiali
     @Override
     public void initData(Object data) {
         this.sucursalB = (int) data;
+        System.out.println(this.sucursalB);
         actualizarTablaClientes();
     }
 
@@ -90,36 +93,63 @@ public class AutorizarPrestamosFXMLController implements Initializable, Initiali
 
     private void loadClientesFromDatabase() {
         Conexion connection = new Conexion();
-        String query = "SELECT * FROM clientes";
-        if (sucursalB != 1) {
-            query += " WHERE id_sucursal = ?";
+        ArrayList<Integer> listaclientes = new ArrayList<Integer>();
+        String query1 = "SELECT id_cliente, pagado FROM prestamos WHERE id_sucursal = ?";
+        try (PreparedStatement preparedStatement1 = connection.prepareStatement(query1)) {
+            if (preparedStatement1 == null) {
+                Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
+                return;
+            }
+            preparedStatement1.setInt(1, sucursalB);
+            try (ResultSet resultSet1 = preparedStatement1.executeQuery()) {
+                while (resultSet1.next()) {
+
+                    if (resultSet1.getInt("pagado") == 0) {
+                        if (listaclientes.contains((Object) resultSet1.getInt("id_cliente"))) {
+                            System.out.println("Entre pagado 0, " + resultSet1.getInt("id_cliente"));
+                        } else {
+                            listaclientes.add(resultSet1.getInt("id_cliente"));
+                        }
+                    } else {
+                        if (listaclientes.contains(resultSet1.getInt("id_cliente"))) {
+                            listaclientes.remove((Object) resultSet1.getInt("id_cliente"));
+                        }
+                    }
+                }
+            }
+            System.out.println(listaclientes);
+        } catch (SQLException ex) {
+            Logger.getLogger(AutorizarPrestamosFXMLController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println(query);
+
+        String query = "SELECT * FROM clientes WHERE id_sucursal = ?  and Moroso = 0";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             if (preparedStatement == null) {
                 Util.showAlertWithAutoClose(Alert.AlertType.ERROR, "Error en la BD", "Hay un error al conectar a la bd, no se realizara ninguna accion", Duration.seconds(3));
                 return;
             }
-            if (sucursalB != 1) {
-                preparedStatement.setInt(1, sucursalB);
-            }
+            preparedStatement.setInt(1, sucursalB);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     Cliente cliente = new Cliente();
                     cliente.setIdCliente(resultSet.getInt("id_cliente"));
-                    cliente.setNumCliente(resultSet.getInt("num_cliente"));
-                    cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
-                    cliente.setCurp(resultSet.getString("curp"));
-                    cliente.setNombre(resultSet.getString("nombre"));
-                    cliente.setTelefono(resultSet.getString("telefono"));
-                    cliente.setSexo(resultSet.getString("sexo"));
-                    cliente.setPais(resultSet.getString("pais"));
-                    cliente.setEstado(resultSet.getString("estado"));
-                    cliente.setMunicipio(resultSet.getString("municipio"));
-                    cliente.setColonia(resultSet.getString("colonia"));
-                    cliente.setDireccion(resultSet.getString("direccion"));
-                    cliente.setMoroso(resultSet.getBoolean("moroso"));
-                    clienteList.add(cliente);
+                    if (listaclientes.contains((Object) cliente.getIdCliente())) {
+
+                    } else {
+                        cliente.setNumCliente(resultSet.getInt("num_cliente"));
+                        cliente.setIdSucursal(resultSet.getInt("id_sucursal"));
+                        cliente.setCurp(resultSet.getString("curp"));
+                        cliente.setNombre(resultSet.getString("nombre"));
+                        cliente.setTelefono(resultSet.getString("telefono"));
+                        cliente.setSexo(resultSet.getString("sexo"));
+                        cliente.setPais(resultSet.getString("pais"));
+                        cliente.setEstado(resultSet.getString("estado"));
+                        cliente.setMunicipio(resultSet.getString("municipio"));
+                        cliente.setColonia(resultSet.getString("colonia"));
+                        cliente.setDireccion(resultSet.getString("direccion"));
+                        cliente.setMoroso(resultSet.getBoolean("moroso"));
+                        clienteList.add(cliente);
+                    }
                 }
             }
         } catch (SQLException e) {
