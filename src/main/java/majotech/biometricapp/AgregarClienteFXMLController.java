@@ -89,7 +89,7 @@ public class AgregarClienteFXMLController implements Initializable, Initializabl
                 return;
             }
             statement.setInt(1, 1);
-            statement.setInt(2, 1);
+            statement.setInt(2, idSucursal);
             statement.setString(3, curp);
             statement.setString(4, nombre);
             statement.setString(5, telefono);
