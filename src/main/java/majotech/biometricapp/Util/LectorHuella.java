@@ -79,6 +79,7 @@ public class LectorHuella {
                 this.lbStatus = lb;
             }
         } else {
+            this.id_cliente = 0;
             if (b) {
                 this.clienteList = cl;
                 this.tableClientes = tC;
@@ -224,8 +225,6 @@ public class LectorHuella {
                         Util.showAlert("Error al momento de hacer la comparacion: Verifica el lector", Alert.AlertType.ERROR);
                     }
                 } else {
-
-                    //va aqui
                     writeBitmap(imgBuf, fpWidth, fpHeight, pathImage + "fingerprintBusqueda.bmp");
                     dedo.setImage(new Image(new FileInputStream(pathImage + "fingerprintBusqueda.bmp")));
                     if (prueba(id_cliente)) {

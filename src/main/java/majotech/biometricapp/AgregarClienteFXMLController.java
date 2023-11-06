@@ -99,7 +99,7 @@ public class AgregarClienteFXMLController implements Initializable, Initializabl
             statement.setString(9, municipio);
             statement.setString(10, colonia);
             statement.setString(11, direccion);
-            statement.setInt(12, 1);
+            statement.setInt(12, 0);
             byte[] bmpData = Util.obtenerDatosBMP(TFCurp.getText());
 
             statement.setBytes(13, bmpData);
